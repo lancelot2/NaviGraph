@@ -1,5 +1,8 @@
 [build-system]
-requires = ["hatchling"]
+# packaging>=24.2 provides packaging.licenses, which hatchling needs to handle
+# the SPDX `license` below. Pinned so source builds work even where the build
+# environment's default packaging is old (e.g. Ubuntu Jammy / ROS Humble).
+requires = ["hatchling", "packaging>=24.2"]
 build-backend = "hatchling.build"
 
 [project]
