@@ -30,6 +30,8 @@ dependencies = [
 
 [project.optional-dependencies]
 service = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
+# ResPlan evaluation: the pickle contains Shapely geometry + a NetworkX graph.
+eval = ["shapely>=2", "networkx>=3"]
 dev = ["pytest>=7", "httpx>=0.27"]
 
 [project.urls]
