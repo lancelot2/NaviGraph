@@ -4,7 +4,10 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# `npm install` (not `npm ci`): the committed lock omits Linux-only optional
+# native deps (Tailwind oxide's wasm fallback pulls @emnapi/*) because it is
+# generated on macOS. install reconciles them at build time; ci would error.
+RUN npm install --no-audit --no-fund
 
 FROM node:20-alpine AS builder
 WORKDIR /app

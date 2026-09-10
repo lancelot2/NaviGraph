@@ -15,7 +15,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      # `npm install` (not `npm ci`): the lock is generated on macOS and omits
+      # Linux-only optional native deps (Tailwind oxide wasm fallback → @emnapi).
+      - run: npm install --no-audit --no-fund
       - run: npm run lint
       - run: npm run typecheck
       # Includes the bundle schema test and the TS side of the context parity test.
@@ -87,6 +89,10 @@ jobs:
         run: |
           apt-get update
           apt-get install -y python3-colcon-common-extensions python3-pip
+          # Jammy (Humble) ships pip 22, whose build isolation leaks an old
+          # `packaging` that lacks packaging.licenses (needed for the SPDX
+          # license in pyproject). Upgrade pip first.
+          python3 -m pip install --upgrade pip
           pip3 install -e ./sdk/python
       - name: colcon build
         shell: bash
