@@ -1,4 +1,10 @@
-import type { NodeType, EdgeType, Bounds } from "@/lib/graph/types"
+import type {
+  NodeType,
+  EdgeType,
+  Bounds,
+  Point,
+  EdgeMetadata,
+} from "@/lib/graph/types"
 
 // The raw graph a VisionProvider extracts from a floor plan, before it is
 // persisted. Nodes reference each other by a provider-local `tempId`.
@@ -12,6 +18,8 @@ export type ParsedNode = {
   pos_y: number
   // Normalized [0,1] bounding box of the room on the plan image, when available.
   bounds?: Bounds
+  // Normalized [0,1] polygon outline; supersedes `bounds` when present.
+  points?: Point[]
 }
 
 export type ParsedEdge = {
@@ -19,6 +27,7 @@ export type ParsedEdge = {
   targetTempId: string
   type: EdgeType
   certain: boolean
+  metadata?: EdgeMetadata
 }
 
 export type ParsedGraph = {

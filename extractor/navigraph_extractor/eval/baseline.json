@@ -1,0 +1,5 @@
+{
+  "dataset": "resplan",
+  "metrics": null,
+  "note": "Populate with: python -m navigraph_extractor.eval --dataset resplan --n 200 --data ResPlan.pkl --update-baseline (needs the eval extra + the downloaded pickle)."
+}

@@ -29,6 +29,10 @@ const COLOR: Record<NodeType, string> = {
   stair: "#f59e0b",
   elevator: "#a855f7",
   landmark: "#ef4444",
+  door: "#0ea5e9",
+  entrance_door: "#06b6d4",
+  window: "#f97316",
+  opening: "#84cc16",
 }
 const LABEL: Record<NodeType, string> = {
   room: "Rooms",
@@ -36,6 +40,10 @@ const LABEL: Record<NodeType, string> = {
   stair: "Stairs",
   elevator: "Elevators",
   landmark: "Landmarks",
+  door: "Doors",
+  entrance_door: "Entrance doors",
+  window: "Windows",
+  opening: "Openings",
 }
 
 export function Catalogue({

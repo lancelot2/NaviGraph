@@ -44,6 +44,7 @@ export type Database = {
           certain: boolean
           created_at: string
           id: string
+          metadata: Json
           project_id: string
           source: string
           target: string
@@ -53,6 +54,7 @@ export type Database = {
           certain?: boolean
           created_at?: string
           id?: string
+          metadata?: Json
           project_id: string
           source: string
           target: string
@@ -62,6 +64,7 @@ export type Database = {
           certain?: boolean
           created_at?: string
           id?: string
+          metadata?: Json
           project_id?: string
           source?: string
           target?: string

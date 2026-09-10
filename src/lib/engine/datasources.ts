@@ -7,6 +7,7 @@ import type {
   NodeType,
   EdgeType,
   NodeSemantics,
+  EdgeMetadata,
 } from "@/lib/graph/types"
 import type { ContextDataSource } from "./context"
 
@@ -41,6 +42,7 @@ type RawEdge = {
   target: string
   type: string
   certain: boolean
+  metadata?: unknown
 }
 
 // External requests: authenticated by an API key via SECURITY DEFINER functions
@@ -74,6 +76,7 @@ export function apiKeyDataSource(
         target: e.target,
         type: e.type as EdgeType,
         certain: e.certain,
+        metadata: (e.metadata ?? {}) as EdgeMetadata,
       }))
       return { nodes, edges }
     },
