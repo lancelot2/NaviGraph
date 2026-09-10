@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "generator": "navigraph-example@0.1.0",
+  "generated_at": "2026-09-10T00:00:00.000Z",
+  "project": { "id": "sample-building", "name": "Sample Building" },
+  "embedding": null,
+  "graph": {
+    "nodes": [
+      { "id": "entrance", "type": "entrance", "name": "Main Entrance", "description": null, "floor": 0, "pos_x": 40, "pos_y": 400, "metadata": { "bounds": { "x": 0.02, "y": 0.45, "w": 0.10, "h": 0.10 } } },
+      { "id": "lobby", "type": "room", "name": "Lobby", "description": "Reception and waiting area.", "floor": 0, "pos_x": 220, "pos_y": 400, "metadata": { "synonyms": ["reception"], "bounds": { "x": 0.15, "y": 0.40, "w": 0.20, "h": 0.20 } } },
+      { "id": "corridor", "type": "room", "name": "Corridor", "description": null, "floor": 0, "pos_x": 430, "pos_y": 420, "metadata": { "bounds": { "x": 0.38, "y": 0.42, "w": 0.10, "h": 0.40 } } },
+      { "id": "meeting", "type": "room", "name": "Meeting Room", "description": null, "floor": 0, "pos_x": 640, "pos_y": 200, "metadata": { "bounds": { "x": 0.50, "y": 0.15, "w": 0.28, "h": 0.25 } } },
+      { "id": "storage", "type": "room", "name": "Storage Room", "description": "Where cleaning and office supplies are kept.", "floor": 0, "pos_x": 640, "pos_y": 560, "metadata": { "synonyms": ["supply room", "stockroom"], "landmarks": ["Metal shelves"], "signs": ["STORAGE"], "bounds": { "x": 0.50, "y": 0.55, "w": 0.28, "h": 0.25 } } },
+      { "id": "stair", "type": "stair", "name": "Staircase", "description": null, "floor": 0, "pos_x": 430, "pos_y": 700, "metadata": { "bounds": { "x": 0.38, "y": 0.84, "w": 0.10, "h": 0.12 } } },
+      { "id": "elevator", "type": "elevator", "name": "Elevator", "description": null, "floor": 0, "pos_x": 220, "pos_y": 560, "metadata": { "bounds": { "x": 0.16, "y": 0.66, "w": 0.12, "h": 0.12 } } },
+      { "id": "office", "type": "room", "name": "Office", "description": null, "floor": 1, "pos_x": 200, "pos_y": 120, "metadata": { "bounds": { "x": 0.10, "y": 0.10, "w": 0.25, "h": 0.20 } } }
+    ],
+    "edges": [
+      { "id": "e1", "source": "entrance", "target": "lobby", "type": "connected_to", "certain": true },
+      { "id": "e2", "source": "lobby", "target": "corridor", "type": "connected_to", "certain": true },
+      { "id": "e3", "source": "corridor", "target": "meeting", "type": "connected_to", "certain": true },
+      { "id": "e4", "source": "corridor", "target": "storage", "type": "connected_to", "certain": false },
+      { "id": "e5", "source": "corridor", "target": "stair", "type": "connected_to", "certain": true },
+      { "id": "e6", "source": "lobby", "target": "elevator", "type": "connected_to", "certain": true },
+      { "id": "e7", "source": "stair", "target": "office", "type": "connected_to", "certain": true },
+      { "id": "e8", "source": "elevator", "target": "office", "type": "connected_to", "certain": true }
+    ]
+  },
+  "references": [],
+  "georeference": {
+    "frame_id": "map",
+    "resolution": 0.05,
+    "image_width": 1000,
+    "image_height": 800,
+    "origin": { "x": 0.0, "y": 0.0, "theta": 0.0 }
+  }
+}

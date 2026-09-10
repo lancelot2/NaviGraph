@@ -1,0 +1,2414 @@
+[
+  {
+    "name": "override_same_floor",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the meeting room",
+      "currentLocation": "Lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": "Meeting Room",
+      "path": [
+        "Lobby",
+        "Corridor",
+        "Meeting Room"
+      ],
+      "landmarks": [],
+      "context": "You are in Lobby. Goal: reach Meeting Room.\nRoute: Lobby → Corridor → Meeting Room (3 nodes, same floor).\nStep 1: From Lobby, proceed to Corridor.\nStep 2: From Corridor, proceed to Meeting Room."
+    }
+  },
+  {
+    "name": "destination_after_to_with_synonym",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "take me to the supply room",
+      "currentLocation": "Main Entrance"
+    },
+    "expected": {
+      "current_location": "Main Entrance",
+      "destination": "Storage Room",
+      "path": [
+        "Main Entrance",
+        "Lobby",
+        "Corridor",
+        "Storage Room"
+      ],
+      "landmarks": [
+        "Metal shelves"
+      ],
+      "context": "You are in Main Entrance. Goal: reach Storage Room.\nRoute: Main Entrance → Lobby → Corridor → Storage Room (4 nodes, same floor).\nStep 1: From Main Entrance, proceed to Lobby.\nStep 2: From Lobby, proceed to Corridor.\nStep 3: From Corridor, proceed to Storage Room.\nDestination landmarks: Metal shelves, STORAGE.\nAbout Storage Room: Where cleaning and office supplies are kept."
+    }
+  },
+  {
+    "name": "multi_floor_via_elevator",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the office",
+      "currentLocation": "Lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": "Office",
+      "path": [
+        "Lobby",
+        "Elevator",
+        "Office"
+      ],
+      "landmarks": [],
+      "context": "You are in Lobby. Goal: reach Office.\nRoute: Lobby → Elevator → Office (3 nodes, multiple floors).\nStep 1: From Lobby, proceed to Elevator. Take the elevator to floor 0.\nStep 2: From Elevator, proceed to Office. This changes floor to 1."
+    }
+  },
+  {
+    "name": "multi_floor_via_stair",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the office",
+      "currentLocation": "Meeting Room"
+    },
+    "expected": {
+      "current_location": "Meeting Room",
+      "destination": "Office",
+      "path": [
+        "Meeting Room",
+        "Corridor",
+        "Staircase",
+        "Office"
+      ],
+      "landmarks": [],
+      "context": "You are in Meeting Room. Goal: reach Office.\nRoute: Meeting Room → Corridor → Staircase → Office (4 nodes, multiple floors).\nStep 1: From Meeting Room, proceed to Corridor.\nStep 2: From Corridor, proceed to Staircase. Take the stairs to floor 0.\nStep 3: From Staircase, proceed to Office. This changes floor to 1."
+    }
+  },
+  {
+    "name": "localize_from_instruction_from_to",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "from the lobby to the meeting room"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": "Meeting Room",
+      "path": [
+        "Lobby",
+        "Corridor",
+        "Meeting Room"
+      ],
+      "landmarks": [],
+      "context": "You are in Lobby. Goal: reach Meeting Room.\nRoute: Lobby → Corridor → Meeting Room (3 nodes, same floor).\nStep 1: From Lobby, proceed to Corridor.\nStep 2: From Corridor, proceed to Meeting Room."
+    }
+  },
+  {
+    "name": "localize_from_instruction_currently_in",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "I am currently in the corridor, go to the office"
+    },
+    "expected": {
+      "current_location": "Corridor",
+      "destination": "Office",
+      "path": [
+        "Corridor",
+        "Staircase",
+        "Office"
+      ],
+      "landmarks": [],
+      "context": "You are in Corridor. Goal: reach Office.\nRoute: Corridor → Staircase → Office (3 nodes, multiple floors).\nStep 1: From Corridor, proceed to Staircase. Take the stairs to floor 0.\nStep 2: From Staircase, proceed to Office. This changes floor to 1."
+    }
+  },
+  {
+    "name": "image_localized_node_id",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the storage room",
+      "localizedNodeId": "lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": "Storage Room",
+      "path": [
+        "Lobby",
+        "Corridor",
+        "Storage Room"
+      ],
+      "landmarks": [
+        "Metal shelves"
+      ],
+      "context": "You are in Lobby. Goal: reach Storage Room.\nRoute: Lobby → Corridor → Storage Room (3 nodes, same floor).\nStep 1: From Lobby, proceed to Corridor.\nStep 2: From Corridor, proceed to Storage Room.\nDestination landmarks: Metal shelves, STORAGE.\nAbout Storage Room: Where cleaning and office supplies are kept."
+    }
+  },
+  {
+    "name": "current_equals_destination",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the lobby",
+      "currentLocation": "Lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": null,
+      "path": [],
+      "landmarks": [],
+      "context": "You are in Lobby, but the destination in \"go to the lobby\" could not be matched to a known room."
+    }
+  },
+  {
+    "name": "unnamed_current_node",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the office",
+      "currentLocation": "u1"
+    },
+    "expected": {
+      "current_location": "unnamed room",
+      "destination": "Office",
+      "path": [
+        "unnamed room",
+        "Corridor",
+        "Staircase",
+        "Office"
+      ],
+      "landmarks": [],
+      "context": "You are in unnamed room. Goal: reach Office.\nRoute: unnamed room → Corridor → Staircase → Office (4 nodes, multiple floors).\nStep 1: From unnamed room, proceed to Corridor.\nStep 2: From Corridor, proceed to Staircase. Take the stairs to floor 0.\nStep 3: From Staircase, proceed to Office. This changes floor to 1."
+    }
+  },
+  {
+    "name": "unresolved_destination",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the rooftop helipad",
+      "currentLocation": "Lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": null,
+      "path": [],
+      "landmarks": [],
+      "context": "You are in Lobby, but the destination in \"go to the rooftop helipad\" could not be matched to a known room."
+    }
+  },
+  {
+    "name": "disconnected_destination",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go to the vault",
+      "currentLocation": "Lobby"
+    },
+    "expected": {
+      "current_location": "Lobby",
+      "destination": "Vault",
+      "path": [],
+      "landmarks": [],
+      "context": "You are in Lobby. No route to Vault exists in the current spatial graph — the buildings may be disconnected."
+    }
+  },
+  {
+    "name": "could_not_determine_location",
+    "graph": {
+      "nodes": [
+        {
+          "id": "entrance",
+          "type": "entrance",
+          "name": "Main Entrance",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "lobby",
+          "type": "room",
+          "name": "Lobby",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "reception"
+            ]
+          }
+        },
+        {
+          "id": "corridor",
+          "type": "room",
+          "name": "Corridor",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "meeting",
+          "type": "room",
+          "name": "Meeting Room",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "storage",
+          "type": "room",
+          "name": "Storage Room",
+          "description": "Where cleaning and office supplies are kept.",
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {
+            "synonyms": [
+              "supply room",
+              "stockroom"
+            ],
+            "landmarks": [
+              "Metal shelves"
+            ],
+            "signs": [
+              "STORAGE"
+            ]
+          }
+        },
+        {
+          "id": "stair",
+          "type": "stair",
+          "name": "Staircase",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "elevator",
+          "type": "elevator",
+          "name": "Elevator",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "office",
+          "type": "room",
+          "name": "Office",
+          "description": null,
+          "floor": 1,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "vault",
+          "type": "room",
+          "name": "Vault",
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        },
+        {
+          "id": "u1",
+          "type": "room",
+          "name": null,
+          "description": null,
+          "floor": 0,
+          "pos_x": 0,
+          "pos_y": 0,
+          "metadata": {}
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "entrance",
+          "target": "lobby",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e2",
+          "source": "lobby",
+          "target": "corridor",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e3",
+          "source": "corridor",
+          "target": "meeting",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e4",
+          "source": "corridor",
+          "target": "storage",
+          "type": "connected_to",
+          "certain": false
+        },
+        {
+          "id": "e5",
+          "source": "corridor",
+          "target": "stair",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e6",
+          "source": "lobby",
+          "target": "elevator",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e7",
+          "source": "stair",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e8",
+          "source": "elevator",
+          "target": "office",
+          "type": "connected_to",
+          "certain": true
+        },
+        {
+          "id": "e9",
+          "source": "corridor",
+          "target": "u1",
+          "type": "connected_to",
+          "certain": true
+        }
+      ]
+    },
+    "request": {
+      "instruction": "go somewhere nice"
+    },
+    "expected": {
+      "current_location": null,
+      "destination": null,
+      "path": [],
+      "landmarks": [],
+      "context": "Could not determine the robot's current location. Provide a camera frame, pass `current_location` (a room name), or name the starting room in the instruction (e.g. \"from the lobby to …\")."
+    }
+  }
+]

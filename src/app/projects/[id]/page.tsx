@@ -8,6 +8,7 @@ import { KnowledgePanel } from "@/components/knowledge-panel"
 import { EnrichmentAssistant } from "@/components/enrichment-assistant"
 import { SidebarTabs } from "@/components/sidebar-tabs"
 import { Catalogue } from "@/components/catalogue"
+import { ExportBundleButton } from "@/components/export-bundle-button"
 import { computeKnowledge } from "@/lib/knowledge/score"
 import type {
   GraphNode,
@@ -124,6 +125,7 @@ export default async function ProjectPage({
           >
             Test API →
           </Link>
+          <ExportBundleButton projectId={project.id} />
           {project.plan_path && (
             <PlanPanel projectId={project.id} hasPlan />
           )}
