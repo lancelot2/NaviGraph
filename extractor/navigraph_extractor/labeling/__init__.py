@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .base import Labeler, PassageLabel, PassageType, RegionLabel
+from .hybrid import HybridLabeler
 from .mock import MockLabeler
 from .openai import OpenAILabeler
 from .orchestrate import label_passages, label_regions
@@ -14,6 +15,7 @@ __all__ = [
     "PassageType",
     "MockLabeler",
     "OpenAILabeler",
+    "HybridLabeler",
     "label_regions",
     "label_passages",
 ]
