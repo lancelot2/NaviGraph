@@ -1,12 +1,16 @@
 {
   "dataset": "resplan",
   "n": 100,
+  "params": {
+    "wall_close_ksize": 21,
+    "passage_k_from_walls": true
+  },
   "metrics": {
     "n": 100,
-    "mean_iou": 0.653,
-    "edge_precision": 0.01,
-    "edge_recall": 0.0025,
-    "edge_f1": 0.004,
-    "region_count_ratio": 0.7771
+    "mean_iou": 0.6132,
+    "edge_precision": 0.2382,
+    "edge_recall": 0.1384,
+    "edge_f1": 0.1619,
+    "region_count_ratio": 0.7705
   }
 }

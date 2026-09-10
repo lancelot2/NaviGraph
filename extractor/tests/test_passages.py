@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import cv2
 import numpy as np
 
 from navigraph_extractor.config import ExtractorParams
-from navigraph_extractor.passages import detect_passages, resolve_dilation_k
+from navigraph_extractor.passages import (
+    detect_passages,
+    effective_k,
+    estimate_wall_thickness,
+    resolve_dilation_k,
+)
 from navigraph_extractor.schema import BBox, Region
 
 
@@ -28,6 +34,19 @@ def test_k_derivation_matches_paper_at_512():
     assert resolve_dilation_k(ExtractorParams(passage_dilation_k=9), 512) == 9
     # Larger unnormalized image scales k up (and stays odd).
     assert resolve_dilation_k(ExtractorParams(), 1024) == 11
+
+
+def test_effective_k_from_measured_wall_thickness():
+    wall = np.zeros((200, 200), dtype=np.uint8)
+    cv2.rectangle(wall, (50, 50), (150, 150), 255, 6)  # ~6px-thick wall
+    thickness = estimate_wall_thickness(wall)
+    assert 3.0 <= thickness <= 10.0
+
+    k = effective_k(ExtractorParams(passage_k_from_walls=True), (200, 200), wall)
+    assert k >= 5 and k % 2 == 1
+
+    # Without the flag it falls back to the resolution rule (5 @ 512).
+    assert effective_k(ExtractorParams(), (512, 512), wall) == 5
 
 
 def test_close_regions_produce_one_candidate():

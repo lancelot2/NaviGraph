@@ -35,7 +35,7 @@ def extract_graph(
 
     pre = preprocess(gray, params)
     regions = extract_regions(pre.free, params)
-    candidates = detect_passages(regions, shape, params, source=gray)
+    candidates = detect_passages(regions, shape, params, source=gray, wall_mask=pre.walls)
     region_labels = label_regions(gray, regions, labeler, params)
     passage_labels = label_passages(candidates, labeler)
 
