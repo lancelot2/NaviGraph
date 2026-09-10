@@ -51,7 +51,11 @@ def main(argv: Optional[list[str]] = None) -> None:
 
     if args.update_baseline:
         with open(args.baseline, "w", encoding="utf-8") as fh:
-            json.dump({"dataset": args.dataset, "metrics": agg.to_dict()}, fh, indent=2)
+            json.dump(
+                {"dataset": args.dataset, "n": agg.n, "metrics": agg.to_dict()},
+                fh,
+                indent=2,
+            )
         print(f"baseline written to {args.baseline}")
         return
 

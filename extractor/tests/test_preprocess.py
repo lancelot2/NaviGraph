@@ -69,6 +69,30 @@ def test_remove_text_furniture_masks_small_dense_blob_but_keeps_walls():
     assert cleaned[100, 300] == 255
 
 
+def _two_rooms_with_doorway() -> np.ndarray:
+    """Building outline + a vertical divider with a ~9px gap (a doorway)."""
+    img = _blank(512, 512)
+    cv2.rectangle(img, (50, 50), (462, 462), 0, 3)
+    cv2.line(img, (256, 50), (256, 240), 0, 3)  # divider top
+    cv2.line(img, (256, 250), (256, 462), 0, 3)  # divider bottom, gap 240..250
+    return img
+
+
+def test_wall_sealing_splits_rooms_merged_by_a_doorway():
+    from navigraph_extractor.regions import extract_regions
+
+    gray = _two_rooms_with_doorway()
+
+    # Without sealing, free space leaks through the doorway -> the two rooms
+    # merge into a single component.
+    merged = extract_regions(preprocess(gray, ExtractorParams()).free, ExtractorParams())
+    assert len(merged) == 1
+
+    # Sealing the gap restores two separate rooms.
+    sealed = preprocess(gray, ExtractorParams(wall_close_ksize=15)).free
+    assert len(extract_regions(sealed, ExtractorParams())) == 2
+
+
 def test_preprocess_free_is_complement_of_walls():
     gray = _blank()
     cv2.rectangle(gray, (100, 100), (500, 400), color=0, thickness=3)

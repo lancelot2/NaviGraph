@@ -42,14 +42,25 @@ def _bounds(geoms: list[Any]) -> tuple[float, float, float, float]:
     return min(xs0), min(ys0), max(xs1), max(ys1)
 
 
-def _transform(coords, minx, miny, scale):
-    return [((x - minx) * scale, (y - miny) * scale) for (x, y) in coords]
+def _transform(coords, minx, miny, scale, pad):
+    return [((x - minx) * scale + pad, (y - miny) * scale + pad) for (x, y) in coords]
 
 
 def plan_to_sample(
-    plan: dict, name: str, target: int = 512, wall_px: int = 2
+    plan: dict,
+    name: str,
+    target: int = 512,
+    wall_px: int = 2,
+    pad: int = 8,
+    close_envelope: bool = True,
+    envelope_px: int = 3,
 ) -> Optional[EvalSample]:
-    """Map one ResPlan plan dict to an EvalSample (needs shapely/networkx objects)."""
+    """Map one ResPlan plan dict to an EvalSample (needs shapely/networkx objects).
+
+    Coordinates are metres; we scale the combined node+wall extent to `target`
+    and add `pad` px of margin so no room touches the image border (which would
+    otherwise be rejected by Étape 2's border rule).
+    """
     graph = plan.get("graph")
     if graph is None or graph.number_of_nodes() == 0:
         return None
@@ -58,11 +69,12 @@ def plan_to_sample(
     index = {nid: i for i, nid in enumerate(nodes)}
     geoms = [graph.nodes[nid].get("geometry") for nid in nodes]
 
-    minx, miny, maxx, maxy = _bounds(geoms)
+    wall = plan.get("wall")
+    minx, miny, maxx, maxy = _bounds(geoms + ([wall] if wall is not None else []))
     span = max(maxx - minx, maxy - miny) or 1.0
-    scale = target / span
-    h = max(1, round((maxy - miny) * scale))
-    w = max(1, round((maxx - minx) * scale))
+    scale = (target - 2 * pad) / span
+    h = max(1, round((maxy - miny) * scale) + 2 * pad)
+    w = max(1, round((maxx - minx) * scale) + 2 * pad)
 
     gt_rooms: list[GtRoom] = []
     for nid in nodes:
@@ -70,7 +82,7 @@ def plan_to_sample(
         if g is None or not hasattr(g, "exterior"):
             gt_rooms.append(GtRoom(polygon=[], label=str(graph.nodes[nid].get("type", ""))))
             continue
-        poly = _transform(list(g.exterior.coords), minx, miny, scale)
+        poly = _transform(list(g.exterior.coords), minx, miny, scale, pad)
         gt_rooms.append(GtRoom(polygon=poly, label=str(graph.nodes[nid].get("type", ""))))
 
     gt_edges: set[tuple[int, int]] = set()
@@ -81,38 +93,63 @@ def plan_to_sample(
 
     # Rasterize walls (fallback to room outlines when no wall geometry present).
     gray = np.full((h, w), 255, dtype=np.uint8)
-    walls = plan.get("wall")
-    drawn = _draw_geometry(gray, walls, minx, miny, scale, wall_px)
+    drawn = _draw_geometry(gray, wall, minx, miny, scale, pad, wall_px)
     if not drawn:
         for room in gt_rooms:
             if len(room.polygon) >= 3:
                 pts = np.array([[round(x), round(y)] for (x, y) in room.polygon], np.int32)
                 cv2.polylines(gray, [pts], True, 0, wall_px)
 
+    # Close the building envelope: the raw wall geometry has an open perimeter
+    # (doors, drawing gaps), so the interior would leak to the exterior. Draw the
+    # footprint boundary (union of rooms) as an outer wall. This is the exterior
+    # wall only — it does not reveal interior partitions.
+    if close_envelope:
+        _draw_footprint_boundary(gray, geoms, minx, miny, scale, pad, envelope_px)
+
     return EvalSample(name=name, gray=gray, gt_rooms=gt_rooms, gt_edges=gt_edges)
 
 
-def _draw_geometry(gray, geom, minx, miny, scale, wall_px: int) -> bool:
-    """Draw shapely wall geometry (Line/Polygon/Multi*) as black strokes. Returns
-    whether anything was drawn."""
-    if geom is None:
+def _draw_footprint_boundary(gray, geoms, minx, miny, scale, pad, thickness: int) -> None:
+    from shapely.ops import unary_union
+
+    valid = [g for g in geoms if g is not None and not g.is_empty]
+    if not valid:
+        return
+    footprint = unary_union(valid)
+    for poly in getattr(footprint, "geoms", [footprint]):
+        ring = getattr(poly, "exterior", None)
+        if ring is None:
+            continue
+        pts = np.array(
+            [[round(x), round(y)] for (x, y) in _transform(list(ring.coords), minx, miny, scale, pad)],
+            np.int32,
+        )
+        cv2.polylines(gray, [pts], True, 0, thickness)
+
+
+def _draw_geometry(gray, geom, minx, miny, scale, pad, wall_px: int) -> bool:
+    """Draw shapely wall geometry as black. Polygons are FILLED (ResPlan walls are
+    solid MultiPolygons); LineStrings are stroked. Returns whether anything drawn."""
+    if geom is None or geom.is_empty:
         return False
     parts = list(getattr(geom, "geoms", [geom]))
     drawn = False
     for part in parts:
-        coords = None
-        if hasattr(part, "exterior"):
-            coords = list(part.exterior.coords)
-        elif hasattr(part, "coords"):
-            coords = list(part.coords)
-        if not coords:
-            continue
-        pts = np.array(
-            [[round(x), round(y)] for (x, y) in _transform(coords, minx, miny, scale)],
-            np.int32,
-        )
-        cv2.polylines(gray, [pts], False, 0, wall_px)
-        drawn = True
+        if hasattr(part, "exterior"):  # Polygon -> fill the wall area
+            pts = np.array(
+                [[round(x), round(y)] for (x, y) in _transform(list(part.exterior.coords), minx, miny, scale, pad)],
+                np.int32,
+            )
+            cv2.fillPoly(gray, [pts], 0)
+            drawn = True
+        elif hasattr(part, "coords"):  # LineString -> stroke
+            pts = np.array(
+                [[round(x), round(y)] for (x, y) in _transform(list(part.coords), minx, miny, scale, pad)],
+                np.int32,
+            )
+            cv2.polylines(gray, [pts], False, 0, wall_px)
+            drawn = True
     return drawn
 
 

@@ -1,5 +1,12 @@
 {
   "dataset": "resplan",
-  "metrics": null,
-  "note": "Populate with: python -m navigraph_extractor.eval --dataset resplan --n 200 --data ResPlan.pkl --update-baseline (needs the eval extra + the downloaded pickle)."
+  "n": 100,
+  "metrics": {
+    "n": 100,
+    "mean_iou": 0.653,
+    "edge_precision": 0.01,
+    "edge_recall": 0.0025,
+    "edge_f1": 0.004,
+    "region_count_ratio": 0.7771
+  }
 }

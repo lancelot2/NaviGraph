@@ -32,6 +32,12 @@ class ExtractorParams(BaseModel):
     # drop thin strokes (dimension lines, hatching). 0 disables it.
     thin_line_open_ksize: int = Field(default=0, ge=0)
 
+    # Optional morphological CLOSE (kernel px) that seals gaps in the walls —
+    # doorways and small openings up to ~ksize — so adjacent rooms stay SEPARATE
+    # free-space components in Étape 2 (and the interior stops leaking to the
+    # exterior through open doors). 0 disables it. Tune on the eval set.
+    wall_close_ksize: int = Field(default=0, ge=0)
+
     # Optional text / furniture glyph removal by connected components:
     # a component that is small (area <= text_max_area_pct of the image) AND
     # dense (filled fraction of its bbox >= text_min_fill) is masked out.
