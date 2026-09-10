@@ -63,6 +63,18 @@ def suppress_thin_lines(walls: np.ndarray, ksize: int) -> np.ndarray:
     return cv2.morphologyEx(walls, cv2.MORPH_OPEN, kernel)
 
 
+def seal_walls(walls: np.ndarray, ksize: int) -> np.ndarray:
+    """Morphological closing to seal gaps (doorways) up to ~`ksize` px. No-op if 0.
+
+    This keeps adjacent rooms as separate free-space components and stops the
+    interior from leaking to the exterior through open doors.
+    """
+    if ksize <= 0:
+        return walls
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ksize, ksize))
+    return cv2.morphologyEx(walls, cv2.MORPH_CLOSE, kernel)
+
+
 def remove_text_furniture(
     walls: np.ndarray,
     params: ExtractorParams,
@@ -110,5 +122,6 @@ def preprocess(
     if params.remove_text:
         walls, text_mask = remove_text_furniture(walls, params, ocr_hook, gray)
 
+    walls = seal_walls(walls, params.wall_close_ksize)
     free = cv2.bitwise_not(walls)
     return PreprocessResult(gray=gray, walls=walls, free=free, text_mask=text_mask)
