@@ -1,8 +1,5 @@
 [build-system]
-# packaging>=24.2 provides packaging.licenses, which hatchling needs to handle
-# the SPDX `license` below. Pinned so source builds work even where the build
-# environment's default packaging is old (e.g. Ubuntu Jammy / ROS Humble).
-requires = ["hatchling", "packaging>=24.2"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -11,8 +8,10 @@ version = "0.1.0"
 description = "Offline-first spatial navigation context for robots — hosted and offline backends over one interface."
 readme = "README.md"
 requires-python = ">=3.9"
-license = "Apache-2.0"
-license-files = ["LICENSE"]
+# Classic table form (not the SPDX string): avoids hatchling's PEP 639
+# packaging.licenses path, which breaks in old build environments (ROS Humble's
+# pip 22 leaks Ubuntu's packaging 21.3). The classifier below carries the SPDX id.
+license = { text = "Apache-2.0" }
 authors = [{ name = "Lancelot Salavert" }]
 keywords = ["robotics", "navigation", "ros2", "spatial", "offline", "clip", "dinov2"]
 classifiers = [
