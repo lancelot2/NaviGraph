@@ -81,7 +81,7 @@ with the SDK. Any object with `space() -> EmbeddingSpace` and
 ## The bundle format
 
 Bundles follow the public
-[spatial-graph bundle format](https://github.com/lancelot2/spatial-context-engine/blob/main/docs/spatial-graph-format.md).
+[spatial-graph bundle format](https://github.com/lancelot2/NaviGraph/blob/main/docs/spatial-graph-format.md).
 Export one from the NaviGraph dashboard ("Export bundle").
 
 ## License

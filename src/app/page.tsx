@@ -35,7 +35,7 @@ const STEPS = [
   },
 ]
 
-const REPO_URL = "https://github.com/lancelot2/spatial-context-engine"
+const REPO_URL = "https://github.com/lancelot2/NaviGraph"
 
 const COMPATIBLE = [
   { name: "Robostral", src: "/Robostral_logo.webp", h: "h-7" },

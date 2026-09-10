@@ -32,9 +32,9 @@ onnx = ["onnxruntime>=1.16", "numpy>=1.21", "pillow>=9"]
 dev = ["pytest>=7"]
 
 [project.urls]
-Homepage = "https://github.com/lancelot2/spatial-context-engine"
-Repository = "https://github.com/lancelot2/spatial-context-engine"
-"Bundle format" = "https://github.com/lancelot2/spatial-context-engine/blob/main/docs/spatial-graph-format.md"
+Homepage = "https://github.com/lancelot2/NaviGraph"
+Repository = "https://github.com/lancelot2/NaviGraph"
+"Bundle format" = "https://github.com/lancelot2/NaviGraph/blob/main/docs/spatial-graph-format.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["navigraph"]
