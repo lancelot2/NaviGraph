@@ -21,19 +21,47 @@ from .config import ExtractorParams
 from .schema import BBox, PassageCandidate, Region
 
 
+def _odd(k: int) -> int:
+    k = max(3, k)
+    return k + 1 if k % 2 == 0 else k
+
+
 def resolve_dilation_k(params: ExtractorParams, long_side: int) -> int:
     """Kernel size: explicit if set, else derived from resolution (5 @ 512px).
 
     Forced odd and >= 3 for a symmetric structuring element.
     """
     if params.passage_dilation_k > 0:
-        k = params.passage_dilation_k
-    else:
-        k = round(5 * long_side / 512)
-    k = max(3, k)
-    if k % 2 == 0:
-        k += 1
-    return k
+        return _odd(params.passage_dilation_k)
+    return _odd(round(5 * long_side / 512))
+
+
+def estimate_wall_thickness(wall_mask: np.ndarray) -> float:
+    """Estimate the typical wall stroke thickness (px) from a distance transform.
+
+    2·median(DT over wall pixels) ≈ the width of a uniform strip.
+    """
+    dt = cv2.distanceTransform(wall_mask, cv2.DIST_L2, 3)
+    vals = dt[wall_mask > 0]
+    if vals.size == 0:
+        return 0.0
+    return float(2.0 * np.median(vals))
+
+
+def effective_k(
+    params: ExtractorParams,
+    shape: tuple[int, int],
+    wall_mask: Optional[np.ndarray] = None,
+) -> int:
+    """The dilation k actually used: explicit > from-wall-thickness > resolution."""
+    if params.passage_dilation_k > 0:
+        return _odd(params.passage_dilation_k)
+    if params.passage_k_from_walls and wall_mask is not None:
+        thickness = estimate_wall_thickness(wall_mask)
+        # Each of two regions dilates by ~k/2; to bridge a wall of width `thickness`
+        # we need k >= thickness, with margin for robustness.
+        return _odd(max(5, round(thickness) + 3))
+    return resolve_dilation_k(params, max(shape))
 
 
 def _rasterize(region: Region, shape: tuple[int, int]) -> np.ndarray:
@@ -65,14 +93,16 @@ def detect_passages(
     shape: tuple[int, int],
     params: ExtractorParams,
     source: Optional[np.ndarray] = None,
+    wall_mask: Optional[np.ndarray] = None,
 ) -> list[PassageCandidate]:
     """Find candidate passages between regions by dilated-mask overlap.
 
     `shape` is (H, W) of the working image (used to size masks and derive k).
     `source`, if given, is the image the thumbnails are cropped from.
+    `wall_mask`, if given, lets k be derived from the measured wall thickness.
     """
     H, W = shape
-    k = resolve_dilation_k(params, max(H, W))
+    k = effective_k(params, shape, wall_mask)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
 
     dilated: dict[int, np.ndarray] = {}

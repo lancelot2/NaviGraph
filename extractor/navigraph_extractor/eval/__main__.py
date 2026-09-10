@@ -15,6 +15,7 @@ import os
 import sys
 from typing import Optional
 
+from ..config import ExtractorParams
 from .runner import Aggregate, aggregate, evaluate_sample
 
 _BASELINE = os.path.join(os.path.dirname(__file__), "baseline.json")
@@ -39,10 +40,16 @@ def main(argv: Optional[list[str]] = None) -> None:
     ap.add_argument("--n", type=int, default=200)
     ap.add_argument("--baseline", default=_BASELINE)
     ap.add_argument("--update-baseline", action="store_true")
+    ap.add_argument("--wall-close-ksize", type=int, default=0)
+    ap.add_argument("--k-from-walls", action="store_true")
     args = ap.parse_args(argv)
 
+    params = ExtractorParams(
+        wall_close_ksize=args.wall_close_ksize,
+        passage_k_from_walls=args.k_from_walls,
+    )
     samples = _load_samples(args.dataset, args.data, args.n)
-    results = [evaluate_sample(s) for s in samples]
+    results = [evaluate_sample(s, params) for s in samples]
     agg = aggregate(results)
 
     print(f"dataset={args.dataset} n={agg.n}")
@@ -52,7 +59,15 @@ def main(argv: Optional[list[str]] = None) -> None:
     if args.update_baseline:
         with open(args.baseline, "w", encoding="utf-8") as fh:
             json.dump(
-                {"dataset": args.dataset, "n": agg.n, "metrics": agg.to_dict()},
+                {
+                    "dataset": args.dataset,
+                    "n": agg.n,
+                    "params": {
+                        "wall_close_ksize": args.wall_close_ksize,
+                        "passage_k_from_walls": args.k_from_walls,
+                    },
+                    "metrics": agg.to_dict(),
+                },
                 fh,
                 indent=2,
             )

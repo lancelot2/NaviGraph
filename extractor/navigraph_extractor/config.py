@@ -58,6 +58,10 @@ class ExtractorParams(BaseModel):
     # k=5 on 512px images; 0 means "derive from resolution" (k = 5 * long/512),
     # which matches k=5 once the image is normalized to target_long_side=512.
     passage_dilation_k: int = Field(default=0, ge=0)
+    # When True (and passage_dilation_k==0), derive k from the MEASURED wall
+    # thickness so a region's dilation reliably bridges the wall shared with a
+    # neighbor — the key to detecting adjacencies on real plans.
+    passage_k_from_walls: bool = False
     # Extra margin (px on the working image) around the overlap when cropping the
     # candidate thumbnail sent to the labeler.
     vignette_margin_px: int = Field(default=24, ge=0)
