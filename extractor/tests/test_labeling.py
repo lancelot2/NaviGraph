@@ -74,6 +74,21 @@ def test_passages_binary_is_separate_from_type():
     assert by_id[2].is_passage is True
 
 
+def test_hybrid_labeler_delegates_regions_and_passages():
+    from navigraph_extractor.labeling import HybridLabeler
+
+    region_lab = MockLabeler()
+    passage_lab = MockLabeler(passage_overrides={0: PassageType.WINDOW})
+    hybrid = HybridLabeler(region_lab, passage_lab)
+
+    label_regions(_plan(), _regions(), hybrid, ExtractorParams())
+    assert region_lab.region_batch_calls == 1 and passage_lab.region_batch_calls == 0
+
+    labels = label_passages([_cand(0)], hybrid)
+    assert passage_lab.passage_calls == 1 and region_lab.passage_calls == 0
+    assert labels[0].type is PassageType.WINDOW
+
+
 def test_is_passage_derivation():
     assert PassageLabel(0, PassageType.WINDOW, 0.6).is_passage is True
     assert PassageLabel(0, PassageType.FALSE_POSITIVE, 0.9).is_passage is False
