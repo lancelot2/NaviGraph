@@ -208,7 +208,11 @@ async function buildGraph(projectId: string): Promise<void> {
       floor: n.floor,
       pos_x: n.pos_x,
       pos_y: n.pos_y,
-      metadata: n.bounds ? { bounds: n.bounds } : {},
+      metadata: n.points
+        ? { points: n.points }
+        : n.bounds
+          ? { bounds: n.bounds }
+          : {},
     }
   })
 
@@ -220,6 +224,7 @@ async function buildGraph(projectId: string): Promise<void> {
       target: idByTemp.get(e.targetTempId)!,
       type: e.type,
       certain: e.certain,
+      metadata: e.metadata ?? {},
     }))
 
   if (nodeRows.length) await supabase.from("nodes").insert(nodeRows)

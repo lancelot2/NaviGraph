@@ -7,6 +7,7 @@ import type {
   GraphNode,
   GraphEdge,
   NodeSemantics,
+  EdgeMetadata,
 } from "./types"
 import { findNode, findPath } from "./algo"
 
@@ -32,7 +33,7 @@ async function load(projectId: string): Promise<SpatialGraph> {
       .eq("project_id", projectId),
     supabase
       .from("edges")
-      .select("id, source, target, type, certain")
+      .select("id, source, target, type, certain, metadata")
       .eq("project_id", projectId),
   ])
 
@@ -44,6 +45,7 @@ async function load(projectId: string): Promise<SpatialGraph> {
   const edges: GraphEdge[] = (edgeRows ?? []).map((e) => ({
     ...e,
     type: e.type as EdgeType,
+    metadata: (e.metadata ?? {}) as EdgeMetadata,
   }))
   return { nodes, edges }
 }
@@ -66,6 +68,7 @@ async function save(projectId: string, graph: SpatialGraph): Promise<void> {
         target: e.target,
         type: e.type,
         certain: e.certain,
+        metadata: e.metadata ?? {},
         project_id: projectId,
       })),
     )

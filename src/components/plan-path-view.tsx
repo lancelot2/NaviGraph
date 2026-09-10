@@ -8,6 +8,10 @@ const TYPE_COLOR: Record<NodeType, string> = {
   stair: "#f59e0b",
   elevator: "#a855f7",
   landmark: "#ef4444",
+  door: "#0ea5e9",
+  entrance_door: "#06b6d4",
+  window: "#f97316",
+  opening: "#84cc16",
 }
 
 const clamp = (v: number, min: number, max: number) =>

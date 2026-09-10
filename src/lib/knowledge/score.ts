@@ -1,3 +1,4 @@
+import { PASSAGE_NODE_TYPES } from "@/lib/graph/types"
 import type { SpatialGraph, NodeType } from "@/lib/graph/types"
 
 // The Knowledge Builder scores how complete a building's spatial memory is and,
@@ -27,6 +28,9 @@ export type Knowledge = {
 // Node types that represent a physical place we expect to name, photograph and
 // describe. Landmarks are features inside rooms, so they only need a name.
 const PLACE_TYPES = new Set<NodeType>(["room", "entrance", "stair", "elevator"])
+// Passage nodes (door/window/…) are graph connectors, not places to name or
+// photograph, so they are skipped by the knowledge score.
+const PASSAGE_TYPES = new Set<NodeType>(PASSAGE_NODE_TYPES)
 const MAIN_ENTRANCE_WEIGHT = 3
 
 function hasText(v: string | null): boolean {
@@ -48,6 +52,7 @@ export function computeKnowledge(
   const nameById = new Map(graph.nodes.map((n) => [n.id, n.name]))
 
   for (const node of graph.nodes) {
+    if (PASSAGE_TYPES.has(node.type)) continue // connectors, not places
     total += 1
     if (hasText(node.name)) earned += 1
     else

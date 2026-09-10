@@ -8,11 +8,36 @@ export const NODE_TYPES = [
   "stair",
   "elevator",
   "landmark",
+  // Passage nodes (bipartite graph from the /extractor pipeline). Passages are
+  // first-class nodes sitting between the two spaces they connect.
+  "door",
+  "entrance_door",
+  "window",
+  "opening",
 ] as const
 export type NodeType = (typeof NODE_TYPES)[number]
 
+// Space node types represent physical places; passage node types are openings.
+export const PASSAGE_NODE_TYPES = [
+  "door",
+  "entrance_door",
+  "window",
+  "opening",
+] as const
+export type PassageNodeType = (typeof PASSAGE_NODE_TYPES)[number]
+
 export const EDGE_TYPES = ["connected_to", "contains", "adjacent_to"] as const
 export type EdgeType = (typeof EDGE_TYPES)[number]
+
+// Robot capability profiles that may traverse an edge.
+export type RobotProfile = "ground" | "uav"
+
+// Extra edge attributes (stored in edges.metadata jsonb): traversal weight and
+// which capability profiles may use the edge.
+export type EdgeMetadata = {
+  weight?: number
+  profiles?: RobotProfile[]
+}
 
 // Dimension of image embeddings stored in photos.embedding (see Prompt 5/6).
 export const EMBEDDING_DIM = 512
@@ -52,6 +77,7 @@ export type GraphEdge = {
   target: string
   type: EdgeType
   certain: boolean
+  metadata?: EdgeMetadata
 }
 
 export type SpatialGraph = {
