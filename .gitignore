@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...but the documented quickstart template must be committed.
+!.env.example
 
 # vercel
 .vercel
@@ -42,3 +44,16 @@ next-env.d.ts
 
 # Claude Code local config
 .claude/
+
+# supabase CLI local scratch
+supabase/.temp/
+supabase/.branches/
+
+# python (sdk/python, ros2)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+dist/

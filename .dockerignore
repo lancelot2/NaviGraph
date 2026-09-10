@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+npm-debug.log*
+sdk
+ros2
+examples
+docs
+supabase/.branches
+supabase/.temp
+**/__pycache__
+**/.pytest_cache
+*.md
+tsconfig.tsbuildinfo

@@ -1,0 +1,36 @@
+# Local Supabase configuration for NaviGraph.
+# Used by `supabase start` / `supabase db reset` for local development and
+# self-hosting. The default local API URL and anon key it prints match the
+# values pre-filled in .env.example.
+
+project_id = "navigraph"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[storage]
+enabled = true
+file_size_limit = "25MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000"]
+
+[auth.email]
+enable_signup = true
+# Off for local dev so sign-up returns a session immediately (no SMTP needed).
+enable_confirmations = false

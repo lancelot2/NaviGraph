@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://navigraph.cloud/schemas/spatial-graph-bundle/1.0.0",
+  "title": "NaviGraph Spatial-Graph Bundle",
+  "description": "A single, self-describing, versioned file carrying one building's spatial graph and precomputed reference embeddings, sufficient to run localization, planning, and context generation with no network access.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generator",
+    "generated_at",
+    "project",
+    "embedding",
+    "graph",
+    "references"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Bundle format version (semver). Consumers must reject an unrecognised MAJOR.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "generator": {
+      "type": "string",
+      "description": "What produced the bundle, e.g. \"navigraph-web@0.1.0\"."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of export."
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "embedding": {
+      "description": "The vector space of `references`, or null for a bundle with no embeddings (a zero-vision bundle still supports planning + context generation).",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model", "dim", "modality", "metric"],
+          "properties": {
+            "model": {
+              "type": "string",
+              "description": "Embedding model identifier, e.g. \"text-embedding-3-small\", \"clip-vit-b-32\", \"dinov2-vits14\", \"mock\"."
+            },
+            "dim": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Vector dimensionality; every reference embedding has exactly this length."
+            },
+            "modality": {
+              "type": "string",
+              "enum": ["text", "image"],
+              "description": "Whether embeddings encode scene text extracted from a photo, or the image itself."
+            },
+            "metric": {
+              "type": "string",
+              "enum": ["cosine"],
+              "description": "Distance metric the embeddings were indexed with."
+            }
+          }
+        }
+      ]
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+        "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } }
+      }
+    },
+    "references": {
+      "type": "array",
+      "description": "Precomputed reference embeddings for offline localization.",
+      "items": { "$ref": "#/$defs/reference" }
+    },
+    "georeference": { "$ref": "#/$defs/georeference" }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "name", "description", "floor", "pos_x", "pos_y", "metadata"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["room", "entrance", "stair", "elevator", "landmark"]
+        },
+        "name": { "type": ["string", "null"] },
+        "description": { "type": ["string", "null"] },
+        "floor": { "type": "integer", "description": "Storey; used for multi-floor routing." },
+        "pos_x": { "type": "number", "description": "Layout-canvas x coordinate (not metric)." },
+        "pos_y": { "type": "number", "description": "Layout-canvas y coordinate (not metric)." },
+        "metadata": { "$ref": "#/$defs/nodeMetadata" }
+      }
+    },
+    "nodeMetadata": {
+      "type": "object",
+      "description": "Photo-derived semantics and the room delimitation on the plan image.",
+      "properties": {
+        "objects": { "type": "array", "items": { "type": "string" } },
+        "landmarks": { "type": "array", "items": { "type": "string" } },
+        "signs": { "type": "array", "items": { "type": "string" } },
+        "synonyms": { "type": "array", "items": { "type": "string" } },
+        "bounds": {
+          "type": "object",
+          "description": "Normalized [0,1] bounding box of the room on the plan image.",
+          "additionalProperties": false,
+          "required": ["x", "y", "w", "h"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "w": { "type": "number" },
+            "h": { "type": "number" }
+          }
+        },
+        "points": {
+          "type": "array",
+          "description": "Normalized [0,1] polygon outline of the room; supersedes `bounds` when present.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "target", "type", "certain"],
+      "properties": {
+        "id": { "type": "string" },
+        "source": { "type": "string", "description": "Node id." },
+        "target": { "type": "string", "description": "Node id." },
+        "type": {
+          "type": "string",
+          "enum": ["connected_to", "contains", "adjacent_to"]
+        },
+        "certain": {
+          "type": "boolean",
+          "description": "False for a connection the builder is not confident about."
+        }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "node_id", "embedding"],
+      "properties": {
+        "id": { "type": "string", "description": "Opaque, stable reference id." },
+        "node_id": { "type": "string", "description": "Node id this reference localizes to." },
+        "embedding": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Vector of length equal to embedding.dim."
+        }
+      }
+    },
+    "georeference": {
+      "type": "object",
+      "description": "Optional metric anchoring of the topological graph into a planar map frame.",
+      "additionalProperties": false,
+      "required": ["frame_id", "resolution", "image_width", "image_height", "origin"],
+      "properties": {
+        "frame_id": { "type": "string", "description": "Target coordinate frame, e.g. \"map\"." },
+        "resolution": { "type": "number", "description": "Meters per plan-image pixel." },
+        "image_width": { "type": "integer", "description": "Plan-image pixel width." },
+        "image_height": { "type": "integer", "description": "Plan-image pixel height." },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y", "theta"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "theta": { "type": "number", "description": "Rotation in radians." }
+          }
+        }
+      }
+    }
+  }
+}

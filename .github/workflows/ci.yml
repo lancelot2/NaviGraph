@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  node:
+    name: Web app (lint, typecheck, JS + parity tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      # Includes the bundle schema test and the TS side of the context parity test.
+      - run: npm test
+
+  python:
+    name: Python SDK (pytest + parity)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e "sdk/python[dev]"
+      # SDK suite incl. test_parity (asserts the Python core matches the shared
+      # TS-generated fixtures — the byte-identical contract).
+      - run: pytest sdk/python/tests -q
+      # ROS georeference math (pure, no ROS needed).
+      - run: PYTHONPATH=ros2/navigraph_ros pytest ros2/navigraph_ros/test -q
+
+  supabase:
+    name: Supabase migrations (real Postgres)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      # `supabase start` applies supabase/migrations/*.sql to a real local stack;
+      # a broken migration fails the job.
+      - run: supabase start
+      - name: Verify schema objects exist
+        run: |
+          cat > /tmp/check.sql <<'SQL'
+          do $$
+          begin
+            if to_regclass('public.projects') is null then raise exception 'projects missing'; end if;
+            if to_regclass('public.nodes') is null then raise exception 'nodes missing'; end if;
+            if to_regclass('public.edges') is null then raise exception 'edges missing'; end if;
+            if to_regclass('public.photos') is null then raise exception 'photos missing'; end if;
+            if to_regclass('public.api_keys') is null then raise exception 'api_keys missing'; end if;
+            perform 'public.match_location'::regproc;
+            perform 'public.api_load_graph'::regproc;
+            perform 'public.api_match_location'::regproc;
+          end
+          $$;
+          SQL
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f /tmp/check.sql
+      - if: always()
+        run: supabase stop || true
+
+  ros2:
+    name: ROS 2 build + tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distro: [humble, jazzy]
+    container: ros:${{ matrix.ros_distro }}-ros-base
+    env:
+      PIP_BREAK_SYSTEM_PACKAGES: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build tooling + SDK
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y python3-colcon-common-extensions python3-pip
+          pip3 install -e ./sdk/python
+      - name: colcon build
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          colcon build --paths ros2/navigraph_msgs ros2/navigraph_ros
+      - name: geo tests
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          source install/setup.bash
+          pytest ros2/navigraph_ros/test -q
+
+  docker:
+    name: Docker image + compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build app image
+        run: docker build -t navigraph-app .
+      - name: Validate self-host compose
+        run: |
+          cp docker/.env.example docker/.env
+          docker compose -f docker/docker-compose.yml config >/dev/null

@@ -1,0 +1,12 @@
+# Request: a navigation goal, and optionally the current room (zero-vision path).
+string instruction
+string current_location
+---
+# Response: the resolved context. `ok` is false only on an internal error;
+# an unresolved location/destination is reported in `context` with ok=true.
+bool ok
+string current_location
+string destination
+string[] path
+string[] landmarks
+string context
