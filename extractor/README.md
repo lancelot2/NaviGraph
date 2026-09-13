@@ -62,9 +62,46 @@ python -m navigraph_extractor.eval --dataset resplan --n 200 --data ResPlan.pkl
 #   add --update-baseline to record eval/baseline.json for regression tracking
 ```
 
+### Results on ResPlan — and the current plateau
+
+Validated on the real ResPlan pickle (17,107 plans). Baseline (n=100, tuned
+config `wall_close_ksize=21` + `passage_k_from_walls`, see `eval/baseline.json`):
+
+| metric | value | reading |
+| --- | --- | --- |
+| per-region IoU | **0.65** | segmentation is solid |
+| region / GT count | 0.77 | most rooms are found |
+| edge F1 | **0.16** | the graph is weak |
+
+**The graph, not the segmentation, is the bottleneck — and it is the passage
+detector.** The recall diagnostic (`eval/diagnose.py`, `recall_breakdown`)
+decomposes the missed ground-truth edges: **~73% are pairs where both rooms are
+correctly detected and matched, but no passage is detected between them** (only
+~13% are matching/segmentation failures). So the low edge recall is real and
+localized to the region-dilation-overlap detector, whose `seal`↔`k` tension caps
+it: sealing a doorway thickens the wall there until the dilation `k` can no longer
+bridge it.
+
+**One lever moved it:** deriving `k` from the measured wall thickness
+(`passage_k_from_walls`) lifted edge F1 from 0.004 → 0.16.
+
+**Ruled out by measurement (don't re-try these on ResPlan):**
+- VLM passage labeling (`OpenAILabeler`) — *worse* (F1 0.18→0.11): the rasterized
+  vignettes carry no recognizable door cues, so the VLM prunes true passages.
+- Rendering door/window layers as grey cues — destabilizes Otsu, wrecks regions.
+- Sealing doorways from the door layer — no recall gain.
+- Dissolving the fragmented wall polygons — no change (F1 0.14→0.13).
+
+**Conclusion.** ResPlan is a good **segmentation** benchmark but the wrong one for
+the **graph**: its abstract vectors lack the drawing conventions the method relies
+on (door arcs, uniform wall strokes, symbols), and no rasterization recovers them.
+Pushing graph quality needs a dataset of **real floor-plan drawings** (e.g.
+CubiCasa5K). The metrics core and `recall_breakdown` are dataset-agnostic and
+ready to point at one; only a new loader (+ adjacency-graph derivation) is needed.
+
 ## Status
 
-All stages (0-7) are implemented. Pure/offline stages (preprocess, regions,
-passages, graph) and the metrics core are covered by pytest. The ResPlan wall
-rasterization in `eval/resplan.py` is the one part pending validation against the
-real dataset.
+All stages (0-7) are implemented and covered by pytest; the ResPlan adapter is
+validated on the real dataset. The extractor's geometry (segmentation) works; the
+**graph reconstruction is at a measured plateau on ResPlan** (edge F1 ~0.16, see
+above) pending a real drawn-plan benchmark.
