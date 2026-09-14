@@ -227,6 +227,12 @@ async function buildGraph(projectId: string): Promise<void> {
       metadata: e.metadata ?? {},
     }))
 
-  if (nodeRows.length) await supabase.from("nodes").insert(nodeRows)
-  if (edgeRows.length) await supabase.from("edges").insert(edgeRows)
+  if (nodeRows.length) {
+    const { error } = await supabase.from("nodes").insert(nodeRows)
+    if (error) console.error("Graph node insert failed:", error.message)
+  }
+  if (edgeRows.length) {
+    const { error } = await supabase.from("edges").insert(edgeRows)
+    if (error) console.error("Graph edge insert failed:", error.message)
+  }
 }
