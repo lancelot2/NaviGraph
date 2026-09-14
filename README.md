@@ -1,6 +1,6 @@
 # NaviGraph
 
-[![version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.3.1-blue)](CHANGELOG.md)
 
 Turn a building's floor plan into a portable **spatial graph**, then get a
 plain-text **navigation context** — current location, destination, planned

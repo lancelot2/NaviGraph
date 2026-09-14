@@ -6,6 +6,14 @@ All notable changes to NaviGraph are documented here.
 small release; a **major** bump (`1.x` → `2.0.0`) marks a big one. The current
 version is also in [`package.json`](package.json) and tagged in git (`v1.1.0`).
 
+## [1.3.1] — 2026-09-14
+
+### Fixed
+- The `openai` provider now returns both a bounding box and a polygon per room,
+  validates the polygon (rejecting degenerate, line-like shapes GPT occasionally
+  emits), and falls back to the bounding box when the polygon is unusable — so the
+  overlay never degrades below the previous rectangle behavior.
+
 ## [1.3.0] — 2026-09-14
 
 ### Changed
@@ -91,6 +99,7 @@ robot-deployable project).
 - One-command **Docker self-host** (app + local Supabase, no OpenAI key required),
   GitHub Actions CI, and runnable `examples/`.
 
+[1.3.1]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.1
 [1.3.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.0
 [1.2.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.2.0
 [1.1.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.1.0
