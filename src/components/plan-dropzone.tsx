@@ -2,12 +2,14 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { generatePlanGraph } from "@/app/projects/actions"
+import { generatePlanGraph, saveExtractedGraph } from "@/app/projects/actions"
 import { uploadPlanToStorage, MAX_PLAN_BYTES } from "@/lib/plan-upload"
+import { extractViaRender, EXTRACTOR_URL } from "@/lib/plan-extract"
 
 // If detection hasn't finished in this long, assume something is stuck and
-// surface an error instead of spinning forever.
-const WATCHDOG_MS = 90_000
+// surface an error instead of spinning forever. Generous because a cold
+// extractor instance can take ~50s to wake before it even starts.
+const WATCHDOG_MS = 120_000
 
 // Empty-state uploader for a new building: drag & drop a plan (or click to
 // browse), then show a detection loader while the graph is built.
@@ -46,7 +48,15 @@ export function PlanDropzone({ projectId }: { projectId: string }) {
 
     try {
       const path = await uploadPlanToStorage(projectId, file)
-      await generatePlanGraph(projectId, path)
+      if (EXTRACTOR_URL) {
+        // Heavy plan→graph runs in the browser (off Netlify's ~10s cap); the
+        // server action only persists the result.
+        const extracted = await extractViaRender(file)
+        await saveExtractedGraph(projectId, extracted, path)
+      } else {
+        // Local/dev without an extractor: fall back to the server pipeline.
+        await generatePlanGraph(projectId, path)
+      }
       clearTimeout(watchdog)
       router.refresh() // graph now exists → page swaps in the editor
     } catch (e) {

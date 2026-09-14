@@ -2,16 +2,23 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { generatePlanGraph, regenerateGraph } from "@/app/projects/actions"
+import {
+  generatePlanGraph,
+  regenerateGraph,
+  saveExtractedGraph,
+} from "@/app/projects/actions"
 import { uploadPlanToStorage, MAX_PLAN_BYTES } from "@/lib/plan-upload"
+import { extractViaRender, EXTRACTOR_URL } from "@/lib/plan-extract"
 import { Button } from "@/components/ui/button"
 
 export function PlanPanel({
   projectId,
   hasPlan,
+  planUrl,
 }: {
   projectId: string
   hasPlan: boolean
+  planUrl: string | null
 }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -30,7 +37,12 @@ export function PlanPanel({
     setBusy(true)
     try {
       const path = await uploadPlanToStorage(projectId, file)
-      await generatePlanGraph(projectId, path)
+      if (EXTRACTOR_URL) {
+        const extracted = await extractViaRender(file)
+        await saveExtractedGraph(projectId, extracted, path)
+      } else {
+        await generatePlanGraph(projectId, path)
+      }
       router.refresh()
     } catch (e) {
       setError(
@@ -66,7 +78,14 @@ export function PlanPanel({
             setError(null)
             setBusy(true)
             try {
-              await regenerateGraph(projectId)
+              if (EXTRACTOR_URL && planUrl) {
+                // Re-run detection in the browser from the stored plan image.
+                const blob = await (await fetch(planUrl)).blob()
+                const extracted = await extractViaRender(blob)
+                await saveExtractedGraph(projectId, extracted)
+              } else {
+                await regenerateGraph(projectId)
+              }
               router.refresh()
             } catch (e) {
               setError(

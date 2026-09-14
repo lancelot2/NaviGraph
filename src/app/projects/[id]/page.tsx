@@ -127,7 +127,7 @@ export default async function ProjectPage({
           </Link>
           <ExportBundleButton projectId={project.id} />
           {project.plan_path && (
-            <PlanPanel projectId={project.id} hasPlan />
+            <PlanPanel projectId={project.id} hasPlan planUrl={planUrl} />
           )}
         </div>
       </header>

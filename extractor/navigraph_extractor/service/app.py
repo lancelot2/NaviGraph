@@ -11,6 +11,7 @@ import os
 from typing import Optional
 
 from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .. import __version__
@@ -20,6 +21,23 @@ from ..labeling.mock import MockLabeler
 from ..pipeline import extract_graph, graph_to_dict
 
 app = FastAPI(title="navigraph-extractor", version=__version__)
+
+# The web app now calls /extract directly from the browser (Netlify Free caps
+# serverless functions at ~10s, too short for the full pipeline), so the service
+# must allow cross-origin requests. Restrict with NAVIGRAPH_ALLOW_ORIGINS
+# (comma-separated) in production; defaults to "*" since /extract exposes no
+# secrets and processes only the uploaded plan.
+_origins = [
+    o.strip()
+    for o in os.environ.get("NAVIGRAPH_ALLOW_ORIGINS", "*").split(",")
+    if o.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_origins or ["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def _make_labeler() -> Labeler:

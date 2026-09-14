@@ -8,6 +8,8 @@ import { getVisionProvider } from "@/lib/vision"
 import { MockVisionProvider } from "@/lib/vision/mock"
 import { analyzePlan } from "@/lib/vision/planAnalysisService"
 import { vectorizePolygons } from "@/lib/vision/polygonVectorizationService"
+import { mapExtractedToParsed } from "@/lib/vision/extracted"
+import type { ExtractedGraphJSON } from "@/lib/vision/extracted"
 import type { ParsedGraph, PhotoAnalysis } from "@/lib/vision/types"
 import type { NodeSemantics } from "@/lib/graph/types"
 import type { TablesInsert } from "@/lib/database.types"
@@ -195,11 +197,22 @@ async function buildGraph(projectId: string): Promise<void> {
     parsed = await new MockVisionProvider().parseFloorPlan()
   }
 
-  // Replace any existing graph (edges first for FK safety).
+  await persistParsedGraph(supabase, projectId, parsed)
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
+// Replaces a project's graph with `parsed` (edges first for FK safety, then
+// nodes with fresh UUIDs so edges can reference them). Shared by the local
+// build path (buildGraph) and the browser-orchestrated path (saveExtractedGraph).
+async function persistParsedGraph(
+  supabase: SupabaseServerClient,
+  projectId: string,
+  parsed: ParsedGraph,
+): Promise<void> {
   await supabase.from("edges").delete().eq("project_id", projectId)
   await supabase.from("nodes").delete().eq("project_id", projectId)
 
-  // Assign real UUIDs up front so edges can reference them directly.
   const idByTemp = new Map<string, string>()
   const nodeRows: TablesInsert<"nodes">[] = parsed.nodes.map((n) => {
     const id = randomUUID()
@@ -240,4 +253,36 @@ async function buildGraph(projectId: string): Promise<void> {
     const { error } = await supabase.from("edges").insert(edgeRows)
     if (error) console.error("Graph edge insert failed:", error.message)
   }
+}
+
+// Persists a graph the BROWSER built by calling the extractor service directly.
+// Netlify Free caps functions at ~10s — too short for the full plan pipeline —
+// so the heavy work runs client-side/off-Netlify and this action only validates
+// and stores the result, staying well within the function budget. Optionally
+// sets plan_path in the same round trip (first upload).
+export async function saveExtractedGraph(
+  projectId: string,
+  extracted: ExtractedGraphJSON,
+  planPath?: string,
+): Promise<void> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect("/login")
+
+  if (planPath) {
+    // Defense in depth: only accept a path inside the caller's own folder.
+    if (!planPath.startsWith(`${user.id}/${projectId}/`)) {
+      throw new Error("Invalid plan path")
+    }
+    const { error } = await supabase
+      .from("projects")
+      .update({ plan_path: planPath })
+      .eq("id", projectId)
+    if (error) throw new Error(error.message)
+  }
+
+  await persistParsedGraph(supabase, projectId, mapExtractedToParsed(extracted))
+  revalidatePath(`/projects/${projectId}`)
 }
