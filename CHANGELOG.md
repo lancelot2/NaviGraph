@@ -6,6 +6,14 @@ All notable changes to NaviGraph are documented here.
 small release; a **major** bump (`1.x` → `2.0.0`) marks a big one. The current
 version is also in [`package.json`](package.json) and tagged in git (`v1.1.0`).
 
+## [1.4.0] — 2026-09-14
+
+### Changed
+- Default vision model is now **`gpt-4.1`** (was `gpt-4o`). On real floor plans it
+  localizes room top-left corners and polygons markedly better — e.g. gpt-4o
+  placed the Primary Suite's corner inside the garage; gpt-4.1 places it correctly.
+  Override with `OPENAI_VISION_MODEL`.
+
 ## [1.3.1] — 2026-09-14
 
 ### Fixed
@@ -99,6 +107,7 @@ robot-deployable project).
 - One-command **Docker self-host** (app + local Supabase, no OpenAI key required),
   GitHub Actions CI, and runnable `examples/`.
 
+[1.4.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.4.0
 [1.3.1]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.1
 [1.3.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.0
 [1.2.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.2.0

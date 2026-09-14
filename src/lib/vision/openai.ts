@@ -14,7 +14,9 @@ import type {
 // editor (Prompt 2) is the correction path. Only raster images are supported;
 // PDFs should be rasterised upstream (not done in the MVP), otherwise the caller
 // falls back to the mock.
-const DEFAULT_MODEL = "gpt-4o"
+// gpt-4.1 localizes room corners/polygons markedly better than gpt-4o on real
+// plans. Override per deployment with OPENAI_VISION_MODEL.
+const DEFAULT_MODEL = "gpt-4.1"
 
 const SYSTEM = `You extract a topological spatial graph from a building floor plan image.
 Return ONLY a JSON object (no prose) with this exact shape:
