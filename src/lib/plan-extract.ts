@@ -5,6 +5,16 @@ import type { ExtractedGraphJSON } from "@/lib/vision/extracted"
 // functions cap at ~10s, too short for the full pipeline.
 export const EXTRACTOR_URL = process.env.NEXT_PUBLIC_EXTRACTOR_URL
 
+// Extraction parameters (ExtractorParams JSON). The service defaults (Otsu, no
+// wall-closing) detect NOTHING on real greyscale plans — adaptive thresholding
+// plus wall-closing is what makes rooms segment. Override per deployment with
+// NEXT_PUBLIC_EXTRACTOR_PARAMS (raise min_region_area_pct to merge tiny areas).
+const DEFAULT_PARAMS = JSON.stringify({
+  binarization: "adaptive",
+  wall_close_ksize: 7,
+  min_region_area_pct: 0.05,
+})
+
 // Sends the plan image straight from the browser to the extractor and returns
 // its spatial-graph JSON. The browser has no request timeout, so a slow/cold
 // service is fine here (unlike a serverless function).
@@ -13,6 +23,7 @@ export async function extractViaRender(file: Blob): Promise<ExtractedGraphJSON> 
 
   const form = new FormData()
   form.append("file", file, "plan.png")
+  form.append("params", process.env.NEXT_PUBLIC_EXTRACTOR_PARAMS || DEFAULT_PARAMS)
 
   const res = await fetch(`${EXTRACTOR_URL.replace(/\/$/, "")}/extract`, {
     method: "POST",
