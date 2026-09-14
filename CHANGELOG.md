@@ -6,6 +6,25 @@ All notable changes to NaviGraph are documented here.
 small release; a **major** bump (`1.x` → `2.0.0`) marks a big one. The current
 version is also in [`package.json`](package.json) and tagged in git (`v1.1.0`).
 
+## [1.2.0] — 2026-09-14
+
+Hybrid graph (deterministic geometry + LLM topology) and cleaner polygon overlays.
+
+### Added
+- **Hybrid graph path.** Room-to-room connections now come from the labeler
+  (`Labeler.label_connections`, implemented by the mock, OpenAI, and Hybrid
+  backends) — a recognition task the VLM does well — instead of the region-overlap
+  detector that returned no connections on some real plans. Enabled via
+  `use_llm_connections` in the pipeline, and on by default in the service when
+  `NAVIGRAPH_LABELER=openai`. Produces direct room↔room `connected_to` edges.
+- **Polygon-overlay quality:** text/furniture removal on by default; rectilinear
+  vertex snapping (`rectilinear`); and growth to the wall centerline
+  (`snap_to_walls`) so region outlines sit on the walls, not inside them.
+
+### Changed
+- `Labeler` interface gains `label_connections` (all backends implement it).
+- Defaults: `remove_text`, `rectilinear`, and `snap_to_walls` are now on.
+
 ## [1.1.0] — 2026-09-14
 
 Deterministic floor-plan extractor (FloorPlan2Nav-style: geometry decoupled from
@@ -61,5 +80,6 @@ robot-deployable project).
 - One-command **Docker self-host** (app + local Supabase, no OpenAI key required),
   GitHub Actions CI, and runnable `examples/`.
 
+[1.2.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.2.0
 [1.1.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.1.0
 [1.0.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.0.0

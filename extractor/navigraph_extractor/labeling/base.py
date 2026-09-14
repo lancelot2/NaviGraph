@@ -66,3 +66,11 @@ class Labeler(ABC):
         self, thumbnail: Optional[np.ndarray], passage_id: int
     ) -> PassageLabel:
         """Classify one passage candidate vignette."""
+
+    @abstractmethod
+    def label_connections(
+        self, annotated_image: np.ndarray, region_ids: list[int]
+    ) -> list[tuple[int, int]]:
+        """Recognition, not delimitation: given the numbered/outlined regions,
+        return the pairs of region ids that are directly connected (doorway/open
+        passage). Used by the hybrid graph path."""

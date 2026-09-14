@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from .config import ExtractorParams
-from .graph import build_graph
+from .graph import build_graph, build_graph_from_connections
 from .image_io import load
 from .labeling.base import Labeler
 from .labeling.mock import MockLabeler
-from .labeling.orchestrate import label_passages, label_regions
+from .labeling.orchestrate import label_connections, label_passages, label_regions
 from .passages import detect_passages
 from .preprocess import preprocess
 from .regions import extract_regions
@@ -24,8 +24,14 @@ def extract_graph(
     image_bytes: bytes,
     params: Optional[ExtractorParams] = None,
     labeler: Optional[Labeler] = None,
+    use_llm_connections: bool = False,
 ) -> ExtractedGraph:
-    """Run the full pipeline on raw image bytes."""
+    """Run the full pipeline on raw image bytes.
+
+    With `use_llm_connections`, the room-to-room graph comes from the labeler
+    (a recognition task the VLM does well) instead of the region-overlap detector
+    — the hybrid path: deterministic geometry + LLM topology.
+    """
     params = params or ExtractorParams()
     labeler = labeler or MockLabeler()
 
@@ -34,11 +40,15 @@ def extract_graph(
     shape = gray.shape[:2]  # (H, W)
 
     pre = preprocess(gray, params)
-    regions = extract_regions(pre.free, params)
-    candidates = detect_passages(regions, shape, params, source=gray, wall_mask=pre.walls)
+    regions = extract_regions(pre.free, params, wall_mask=pre.walls)
     region_labels = label_regions(gray, regions, labeler, params)
-    passage_labels = label_passages(candidates, labeler)
 
+    if use_llm_connections:
+        connections = label_connections(gray, regions, labeler)
+        return build_graph_from_connections(regions, region_labels, connections, shape)
+
+    candidates = detect_passages(regions, shape, params, source=gray, wall_mask=pre.walls)
+    passage_labels = label_passages(candidates, labeler)
     return build_graph(regions, candidates, region_labels, passage_labels, shape, params)
 
 

@@ -30,6 +30,12 @@ def _make_labeler() -> Labeler:
     return MockLabeler()
 
 
+def _use_llm_connections() -> bool:
+    # Hybrid graph on by default when a VLM labeler is configured; connections are
+    # a recognition task the region-overlap detector does poorly on real plans.
+    return os.environ.get("NAVIGRAPH_LABELER") == "openai"
+
+
 @app.get("/healthz")
 def healthz() -> dict:
     """Liveness probe."""
@@ -46,5 +52,7 @@ async def extract(
     if not data:
         return JSONResponse(status_code=400, content={"error": "empty file"})
     cfg = ExtractorParams.model_validate_json(params) if params else ExtractorParams()
-    graph = extract_graph(data, cfg, _make_labeler())
+    graph = extract_graph(
+        data, cfg, _make_labeler(), use_llm_connections=_use_llm_connections()
+    )
     return JSONResponse(content=graph_to_dict(graph))

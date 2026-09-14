@@ -49,3 +49,11 @@ def label_passages(
 ) -> list[PassageLabel]:
     """Classify each candidate vignette independently."""
     return [labeler.label_passage(c.thumbnail, c.id) for c in candidates]
+
+
+def label_connections(
+    plan_gray: np.ndarray, regions: list[Region], labeler: Labeler
+) -> list[tuple[int, int]]:
+    """Ask the labeler which numbered regions are directly connected (hybrid graph)."""
+    annotated = render_regions(plan_gray, regions)
+    return labeler.label_connections(annotated, [r.id for r in regions])

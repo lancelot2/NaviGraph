@@ -98,4 +98,6 @@ def test_preprocess_free_is_complement_of_walls():
     cv2.rectangle(gray, (100, 100), (500, 400), color=0, thickness=3)
     result = preprocess(gray, ExtractorParams())
     assert np.array_equal(result.free, cv2.bitwise_not(result.walls))
-    assert result.text_mask is None  # remove_text defaults off
+    assert result.text_mask is not None  # remove_text defaults on
+    # remove_text can be turned off, and then no mask is produced.
+    assert preprocess(gray, ExtractorParams(remove_text=False)).text_mask is None

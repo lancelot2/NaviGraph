@@ -41,7 +41,7 @@ class ExtractorParams(BaseModel):
     # Optional text / furniture glyph removal by connected components:
     # a component that is small (area <= text_max_area_pct of the image) AND
     # dense (filled fraction of its bbox >= text_min_fill) is masked out.
-    remove_text: bool = False
+    remove_text: bool = True
     text_max_area_pct: float = Field(default=0.2, gt=0)
     text_min_fill: float = Field(default=0.5, ge=0, le=1)
 
@@ -52,6 +52,12 @@ class ExtractorParams(BaseModel):
     min_region_area_pct: float = Field(default=0.1, gt=0)
     # approxPolyDP epsilon as a fraction of each contour's perimeter.
     approx_epsilon_frac: float = Field(default=0.01, gt=0)
+    # Snap near-horizontal/vertical polygon edges to axis-aligned (most rooms are
+    # orthogonal) by clustering close vertex coordinates.
+    rectilinear: bool = True
+    # Grow each region to the wall centerline (by ~half the measured wall
+    # thickness) so polygons sit ON the walls, not inside them. Needs a wall mask.
+    snap_to_walls: bool = True
 
     # --- Étape 3: passage candidate detection ------------------------------
     # Dilation kernel for finding where two regions nearly touch. The paper uses

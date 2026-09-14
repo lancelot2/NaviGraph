@@ -31,3 +31,9 @@ class HybridLabeler(Labeler):
         self, thumbnail: Optional[np.ndarray], passage_id: int
     ) -> PassageLabel:
         return self.passage_labeler.label_passage(thumbnail, passage_id)
+
+    def label_connections(
+        self, annotated_image: np.ndarray, region_ids: list[int]
+    ) -> list[tuple[int, int]]:
+        # Connections are a topology/recognition task -> the passage labeler.
+        return self.passage_labeler.label_connections(annotated_image, region_ids)

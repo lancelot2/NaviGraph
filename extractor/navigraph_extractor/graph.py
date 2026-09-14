@@ -35,28 +35,13 @@ def _norm_point(x: float, y: float, w: int, h: int) -> tuple[float, float]:
     return (x / w, y / h)
 
 
-def build_graph(
-    regions: list[Region],
-    candidates: list[PassageCandidate],
-    region_labels: list[RegionLabel],
-    passage_labels: list[PassageLabel],
-    shape: tuple[int, int],
-    params: ExtractorParams,
-) -> ExtractedGraph:
-    """Build the bipartite space<->passage graph from geometry + labels."""
-    h, w = shape
+def _space_nodes(
+    regions: list[Region], region_labels: list[RegionLabel], w: int, h: int
+) -> list[ExtractedNode]:
+    """One space (room) node per region. Names come from the labeler."""
     labels_by_region = {label.region_id: label for label in region_labels}
-    labels_by_passage = {label.passage_id: label for label in passage_labels}
-    cand_by_id = {c.id: c for c in candidates}
-
     nodes: list[ExtractedNode] = []
-    edges: list[ExtractedEdge] = []
-
-    # Spaces (rooms). This CV pipeline does not distinguish stairs/elevators, so
-    # every closed region is a room; its semantic name comes from the labeler.
-    region_ids: set[int] = set()
     for region in regions:
-        region_ids.add(region.id)
         rl = labels_by_region.get(region.id)
         nodes.append(
             ExtractedNode(
@@ -69,6 +54,25 @@ def build_graph(
                 centroid=_norm_point(region.centroid[0], region.centroid[1], w, h),
             )
         )
+    return nodes
+
+
+def build_graph(
+    regions: list[Region],
+    candidates: list[PassageCandidate],
+    region_labels: list[RegionLabel],
+    passage_labels: list[PassageLabel],
+    shape: tuple[int, int],
+    params: ExtractorParams,
+) -> ExtractedGraph:
+    """Build the bipartite space<->passage graph from geometry + labels."""
+    h, w = shape
+    labels_by_passage = {label.passage_id: label for label in passage_labels}
+    cand_by_id = {c.id: c for c in candidates}
+
+    nodes: list[ExtractedNode] = _space_nodes(regions, region_labels, w, h)
+    edges: list[ExtractedEdge] = []
+    region_ids: set[int] = {r.id for r in regions}
 
     # Passages: one node per real passage, wired to BOTH its regions.
     for cand in candidates:
@@ -116,4 +120,40 @@ def build_graph(
                 )
             )
 
+    return ExtractedGraph(nodes=nodes, edges=edges, width=w, height=h)
+
+
+def build_graph_from_connections(
+    regions: list[Region],
+    region_labels: list[RegionLabel],
+    connections: list[tuple[int, int]],
+    shape: tuple[int, int],
+) -> ExtractedGraph:
+    """Hybrid graph: rooms from CV geometry, connections from the LLM.
+
+    Produces direct room<->room `connected_to` edges (no passage nodes) — the
+    topology comes from recognition, not from region-overlap geometry.
+    """
+    h, w = shape
+    nodes = _space_nodes(regions, region_labels, w, h)
+    region_ids = {r.id for r in regions}
+
+    edges: list[ExtractedEdge] = []
+    seen: set[tuple[int, int]] = set()
+    for a, b in connections:
+        if a == b or a not in region_ids or b not in region_ids:
+            continue
+        key = (min(a, b), max(a, b))
+        if key in seen:
+            continue
+        seen.add(key)
+        edges.append(
+            ExtractedEdge(
+                source=f"r{key[0]}",
+                target=f"r{key[1]}",
+                certain=True,
+                weight=1.0,
+                profiles=("ground", "uav"),
+            )
+        )
     return ExtractedGraph(nodes=nodes, edges=edges, width=w, height=h)

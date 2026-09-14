@@ -30,6 +30,7 @@ class MockLabeler(Labeler):
         self.region_batch_calls = 0
         self.region_crop_calls = 0
         self.passage_calls = 0
+        self.connection_calls = 0
 
     def label_regions(
         self, annotated_image: np.ndarray, region_ids: list[int]
@@ -61,3 +62,11 @@ class MockLabeler(Labeler):
         ptype = self.passage_overrides.get(passage_id, PassageType.DOOR)
         conf = 0.6 if ptype in (PassageType.WINDOW, PassageType.ENTRANCE_DOOR) else 0.9
         return PassageLabel(passage_id=passage_id, type=ptype, confidence=conf)
+
+    def label_connections(
+        self, annotated_image: np.ndarray, region_ids: list[int]
+    ) -> list[tuple[int, int]]:
+        self.connection_calls += 1
+        # Deterministic: chain consecutive region ids.
+        ordered = sorted(region_ids)
+        return [(ordered[i], ordered[i + 1]) for i in range(len(ordered) - 1)]

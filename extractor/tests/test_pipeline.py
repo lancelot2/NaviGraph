@@ -38,6 +38,20 @@ def test_pipeline_two_rooms_one_passage():
         assert kind[e.target] == "passage"
 
 
+def test_hybrid_llm_connections_produce_direct_room_edges():
+    g = extract_graph(
+        _two_rooms_png(),
+        ExtractorParams(passage_dilation_k=5),
+        MockLabeler(),
+        use_llm_connections=True,
+    )
+    kinds = {n.id: n.kind for n in g.nodes}
+    assert all(k == "space" for k in kinds.values())  # no passage nodes
+    assert len(g.edges) >= 1
+    for e in g.edges:  # every edge is a direct room<->room link
+        assert kinds[e.source] == "space" and kinds[e.target] == "space"
+
+
 def test_graph_to_dict_is_json_serializable():
     g = extract_graph(
         _two_rooms_png(), ExtractorParams(passage_dilation_k=5), MockLabeler()
