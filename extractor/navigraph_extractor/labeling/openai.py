@@ -30,6 +30,13 @@ _PASSAGE_SYSTEM = (
     '{"type": one of ["door","entrance_door","window","opening","false_positive"], '
     '"confidence": number}. Use "false_positive" if there is no real opening.'
 )
+_CONNECTIONS_SYSTEM = (
+    "The image is a building floor plan with rooms outlined in color and numbered. "
+    "Two rooms are connected when a person can walk directly between them through a "
+    "doorway or open passage (not through a third room). Return ONLY JSON "
+    '{"connections": [[i, j], ...]} listing the numbered room pairs that are '
+    "directly connected. Use the numbers shown; never return coordinates."
+)
 
 
 def _data_url(image: np.ndarray) -> str:
@@ -123,3 +130,25 @@ class OpenAILabeler(Labeler):
         except ValueError:
             ptype = PassageType.FALSE_POSITIVE
         return PassageLabel(passage_id, ptype, float(data.get("confidence", 0.0)))
+
+    def label_connections(
+        self, annotated_image: np.ndarray, region_ids: list[int]
+    ) -> list[tuple[int, int]]:
+        data = self._chat(
+            _CONNECTIONS_SYSTEM, annotated_image, "List the connected room pairs."
+        )
+        valid = set(region_ids)
+        pairs: list[tuple[int, int]] = []
+        seen: set[tuple[int, int]] = set()
+        for item in data.get("connections", []):
+            try:
+                a, b = int(item[0]), int(item[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            if a == b or a not in valid or b not in valid:
+                continue
+            key = (min(a, b), max(a, b))
+            if key not in seen:
+                seen.add(key)
+                pairs.append(key)
+        return pairs

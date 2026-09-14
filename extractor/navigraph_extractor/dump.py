@@ -40,7 +40,7 @@ def dump_stages(
     shape = gray.shape[:2]
 
     pre = preprocess(gray, params)
-    regions = extract_regions(pre.free, params)
+    regions = extract_regions(pre.free, params, wall_mask=pre.walls)
     candidates = detect_passages(regions, shape, params, source=gray)
     region_labels = label_regions(gray, regions, labeler, params)
     passage_labels = label_passages(candidates, labeler)

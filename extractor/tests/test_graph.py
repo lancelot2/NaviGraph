@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from navigraph_extractor.config import ExtractorParams
-from navigraph_extractor.graph import build_graph
+from navigraph_extractor.graph import build_graph, build_graph_from_connections
 from navigraph_extractor.labeling.base import PassageLabel, PassageType, RegionLabel
 from navigraph_extractor.schema import BBox, PassageCandidate, Region
 
@@ -57,6 +57,18 @@ def test_bipartite_structure_and_counts():
         # Every edge is exactly space<->passage (the semantic filter).
         assert node_kind[e.source] == "space"
         assert node_kind[e.target] == "passage"
+
+
+def test_build_graph_from_connections_direct_room_edges():
+    regions, _, rlabels, _ = _fixture()
+    # Valid pairs kept & deduped; self-loop and unknown region dropped.
+    g = build_graph_from_connections(
+        regions, rlabels, [(0, 1), (1, 2), (1, 0), (2, 2), (0, 9)], SHAPE
+    )
+    assert all(n.kind == "space" for n in g.nodes)  # no passage nodes
+    assert len(g.nodes) == 3
+    assert {(e.source, e.target) for e in g.edges} == {("r0", "r1"), ("r1", "r2")}
+    assert all(e.certain and e.profiles == ("ground", "uav") for e in g.edges)
 
 
 def test_profiles_by_passage_type():
