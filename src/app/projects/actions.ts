@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { getVisionProvider } from "@/lib/vision"
 import { MockVisionProvider } from "@/lib/vision/mock"
+import { analyzePlan } from "@/lib/vision/planAnalysisService"
+import { vectorizePolygons } from "@/lib/vision/polygonVectorizationService"
 import type { ParsedGraph, PhotoAnalysis } from "@/lib/vision/types"
 import type { NodeSemantics } from "@/lib/graph/types"
 import type { TablesInsert } from "@/lib/database.types"
@@ -183,7 +185,10 @@ async function buildGraph(projectId: string): Promise<void> {
         mimeType = blob.type || null
       }
     }
-    parsed = await getVisionProvider().parseFloorPlan({ data, mimeType })
+    // Étape 1: VLM semantic graph. Étape 2: sharpen room outlines with the
+    // deterministic OpenCV extractor (best-effort — never throws).
+    parsed = await analyzePlan({ data, mimeType })
+    parsed = await vectorizePolygons({ data, mimeType }, parsed)
   } catch (err) {
     // Never block the "first graph in 2 minutes" flow: fall back to the mock.
     console.error("VisionProvider failed, falling back to mock:", err)
