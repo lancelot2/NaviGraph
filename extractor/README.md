@@ -102,6 +102,14 @@ ready to point at one; only a new loader (+ adjacency-graph derivation) is neede
 ## Status
 
 All stages (0-7) are implemented and covered by pytest; the ResPlan adapter is
-validated on the real dataset. The extractor's geometry (segmentation) works; the
-**graph reconstruction is at a measured plateau on ResPlan** (edge F1 ~0.16, see
-above) pending a real drawn-plan benchmark.
+validated on the real dataset. The extractor's geometry (segmentation) works on
+clean/vector-style plans; the **graph reconstruction is at a measured plateau on
+ResPlan** (edge F1 ~0.16, see above) pending a real drawn-plan benchmark.
+
+**Experimental — not for production on real plans.** On real, *furnished*
+architectural drawings the free-space segmentation fragments (furniture line-art
+breaks rooms apart; resolution normalization thins the walls), so region and
+therefore graph extraction are unreliable. The hosted app should use
+`VISION_PROVIDER=openai` (the LLM-direct method), which extracts rooms and
+connections well on real plans. This extractor is kept for clean/vector inputs,
+evaluation, and ongoing work on the polygon overlay.
