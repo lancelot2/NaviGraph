@@ -1,6 +1,6 @@
 # NaviGraph
 
-[![version](https://img.shields.io/badge/version-1.3.1-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.4.0-blue)](CHANGELOG.md)
 
 Turn a building's floor plan into a portable **spatial graph**, then get a
 plain-text **navigation context** — current location, destination, planned
@@ -109,7 +109,7 @@ OpenAI key. Set `VISION_PROVIDER=openai` + `OPENAI_API_KEY` for real vision.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Publishable/anon key (browser-safe) |
 | `VISION_PROVIDER` | no | `mock` (default) or `openai` |
 | `OPENAI_API_KEY` | if `openai` | Server-side secret |
-| `OPENAI_VISION_MODEL` | no | Defaults to `gpt-4o` |
+| `OPENAI_VISION_MODEL` | no | Defaults to `gpt-4.1` |
 
 ## API reference
 
