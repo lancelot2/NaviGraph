@@ -127,6 +127,12 @@ export async function vectorizePolygons(
   const base = process.env.EXTRACTOR_URL
   if (!base || !input.data) return graph
 
+  // Bound the call so a slow/cold extractor can never hang the request past the
+  // serverless timeout — abort and fall back to the VLM geometry instead.
+  const timeoutMs = Number(process.env.EXTRACTOR_TIMEOUT_MS) || 5000
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+
   try {
     const form = new FormData()
     const ab = input.data.buffer.slice(
@@ -139,6 +145,7 @@ export async function vectorizePolygons(
     const res = await fetch(`${base.replace(/\/$/, "")}/extract`, {
       method: "POST",
       body: form,
+      signal: controller.signal,
     })
     if (!res.ok) {
       throw new Error(`Extractor error ${res.status}: ${await res.text()}`)
@@ -154,7 +161,12 @@ export async function vectorizePolygons(
 
     return associatePolygons(graph, spaces)
   } catch (err) {
-    console.error("polygonVectorizationService failed, keeping VLM geometry:", err)
+    console.error(
+      "polygonVectorizationService failed or timed out, keeping VLM geometry:",
+      err,
+    )
     return graph
+  } finally {
+    clearTimeout(timer)
   }
 }
