@@ -6,6 +6,17 @@ All notable changes to NaviGraph are documented here.
 small release; a **major** bump (`1.x` → `2.0.0`) marks a big one. The current
 version is also in [`package.json`](package.json) and tagged in git (`v1.1.0`).
 
+## [1.3.0] — 2026-09-14
+
+### Changed
+- The `openai` vision provider now returns each room as a **polygon** (`points`)
+  instead of a bounding box, so the overlay can follow non-rectangular rooms.
+
+### Fixed
+- `buildGraph` now logs graph node/edge insert errors instead of swallowing them.
+  (A missing `edges.metadata` column had been silently dropping every connection;
+  the column has been added to the database.)
+
 ## [1.2.0] — 2026-09-14
 
 Hybrid graph (deterministic geometry + LLM topology) and cleaner polygon overlays.
@@ -80,6 +91,7 @@ robot-deployable project).
 - One-command **Docker self-host** (app + local Supabase, no OpenAI key required),
   GitHub Actions CI, and runnable `examples/`.
 
+[1.3.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.0
 [1.2.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.2.0
 [1.1.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.1.0
 [1.0.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.0.0

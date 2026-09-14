@@ -1,7 +1,10 @@
 import { NODE_TYPES, EDGE_TYPES, EMBEDDING_DIM } from "@/lib/graph/types"
+import type { Point } from "@/lib/graph/types"
 import type {
   FloorPlanInput,
+  ParsedEdge,
   ParsedGraph,
+  ParsedNode,
   PhotoAnalysis,
   VisionProvider,
 } from "./types"
@@ -19,7 +22,7 @@ Return ONLY a JSON object (no prose) with this exact shape:
   "nodes": [{ "tempId": string, "type": one of ${JSON.stringify(NODE_TYPES)},
              "name": string|null, "floor": number,
              "pos_x": number, "pos_y": number,
-             "bounds": { "x": number, "y": number, "w": number, "h": number } }],
+             "points": [[x, y], ...] }],
   "edges": [{ "sourceTempId": string, "targetTempId": string,
              "type": one of ${JSON.stringify(EDGE_TYPES)}, "certain": boolean }]
 }
@@ -27,12 +30,13 @@ Rules: identify EVERY room, plus entrances, staircases ("stair") and elevators
 ("elevator") visible on the plan, each as its own node — do not miss any. Do NOT
 create nodes for doors; instead, wherever two rooms share a doorway, opening or
 passage, connect them with a "connected_to" edge.
-Trace the WALL lines to determine each room's extent. "bounds" is the room's bounding
-box in NORMALIZED [0,1] coordinates (x,y = top-left corner, w,h = width/height as
-fractions of the whole image). Be precise about placement: put the box edges exactly on
-the room's outer walls — measure each corner against the full image width and height,
-and double-check the box neither floats inside the room nor spills past its walls.
-Ensure x+w<=1 and y+h<=1. pos_x/pos_y are layout coordinates on a ~800x600 canvas.
+Trace the WALL lines to determine each room's shape. "points" is the room's boundary
+polygon: an ordered list of its corner vertices, going around the room, in NORMALIZED
+[0,1] coordinates ([x, y]; x from the left edge, y from the top edge, as fractions of
+the whole image). Follow the room's ACTUAL shape — it is often non-rectangular (L-shapes,
+alcoves), so use as many corners as needed (4 or more). Put each vertex exactly on the
+wall corner, measured against the full image width and height; do not float inside the
+room nor spill past its walls. pos_x/pos_y are layout coordinates on a ~800x600 canvas.
 Use "connected_to" for rooms joined by a doorway/passage, "adjacent_to" when two rooms
 share a wall but you are unsure they connect, and "contains" for a room enclosing a
 landmark. Mark certain=false for connections you are not confident about.`
@@ -85,10 +89,33 @@ export class OpenAIVisionProvider implements VisionProvider {
 
     const json = await res.json()
     const text: string = json.choices?.[0]?.message?.content ?? ""
-    const parsed = JSON.parse(text) as ParsedGraph
-    // Normalise: providers occasionally omit optional fields.
-    parsed.nodes = parsed.nodes.map((n) => ({ ...n, description: n.description ?? null }))
-    return parsed
+    const raw = JSON.parse(text) as {
+      nodes: Array<Record<string, unknown>>
+      edges: ParsedEdge[]
+    }
+
+    const nodes: ParsedNode[] = (raw.nodes ?? []).map((n) => {
+      const rawPts = Array.isArray(n.points) ? (n.points as unknown[]) : []
+      const points: Point[] = rawPts
+        .filter((p): p is [number, number] => Array.isArray(p) && p.length >= 2)
+        .map(([x, y]) => ({ x: Number(x), y: Number(y) }))
+      const hasPoly = points.length >= 3
+      const cx = hasPoly ? points.reduce((s, p) => s + p.x, 0) / points.length : 0
+      const cy = hasPoly ? points.reduce((s, p) => s + p.y, 0) / points.length : 0
+      return {
+        tempId: String(n.tempId),
+        type: n.type as ParsedNode["type"],
+        name: (n.name as string | null) ?? null,
+        description: null,
+        floor: Number(n.floor ?? 0),
+        pos_x: Number(n.pos_x ?? cx * 800),
+        pos_y: Number(n.pos_y ?? cy * 600),
+        points: hasPoly ? points : undefined,
+        bounds: (n.bounds as ParsedNode["bounds"]) ?? undefined,
+      }
+    })
+
+    return { nodes, edges: raw.edges ?? [] }
   }
 
   async analyzePhoto(input: FloorPlanInput): Promise<PhotoAnalysis> {
