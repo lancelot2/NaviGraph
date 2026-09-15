@@ -15,10 +15,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
 import base64
+import json
 
 from .. import __version__
 from ..colorize import colorize_plan
 from ..detect import detect_rooms
+from ..walkthrough import analyze_walkthrough
 from ..config import ExtractorParams
 from ..labeling.base import Labeler
 from ..labeling.mock import MockLabeler
@@ -112,3 +114,30 @@ async def colorize(
         "nodes": graph["nodes"],
         "edges": graph["edges"],
     })
+
+
+@app.post("/walkthrough")
+async def walkthrough(
+    file: UploadFile = File(...),
+    keyframes: str = Form("[]"),
+) -> JSONResponse:
+    """Narrated video + key frames -> { nodes, edges, transcript }.
+
+    Whisper transcribes the video, then a vision model extracts rooms + objects
+    + connections (ExtractedGraphJSON shape). No floor plan → grid layout, no
+    polygons. Runs here (off Netlify's ~10s cap) since it can take much longer.
+    """
+    data = await file.read()
+    if not data:
+        return JSONResponse(status_code=400, content={"error": "empty file"})
+    try:
+        frames = json.loads(keyframes)
+        if not isinstance(frames, list):
+            frames = []
+    except json.JSONDecodeError:
+        frames = []
+    try:
+        graph = analyze_walkthrough(data, file.filename or "walkthrough.webm", frames)
+    except Exception as e:  # noqa: BLE001
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    return JSONResponse(content=graph)
