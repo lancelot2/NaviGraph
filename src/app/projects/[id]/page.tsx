@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PlanPanel } from "@/components/plan-panel"
 import { PlanDropzone } from "@/components/plan-dropzone"
-import { PlanEditor } from "@/components/plan-editor"
+import { PlanView } from "@/components/plan-view"
 import { KnowledgePanel } from "@/components/knowledge-panel"
 import { EnrichmentAssistant } from "@/components/enrichment-assistant"
 import { SidebarTabs } from "@/components/sidebar-tabs"
@@ -69,6 +69,15 @@ export default async function ProjectPage({
         .data?.signedUrl ?? null)
     : null
 
+  // The coloured overlay lives next to the plan at a conventional path.
+  const overlayPath = project.plan_path
+    ? project.plan_path.replace(/[^/]+$/, "overlay.png")
+    : null
+  const overlayUrl = overlayPath
+    ? ((await supabase.storage.from("plans").createSignedUrl(overlayPath, 3600))
+        .data?.signedUrl ?? null)
+    : null
+
   const photosByNode: Record<string, string[]> = {}
   const photoPaths = (photoRows ?? []).filter(
     (p): p is { node_id: string; storage_path: string } =>
@@ -84,21 +93,6 @@ export default async function ProjectPage({
       if (url) (photosByNode[p.node_id] ??= []).push(url)
     }
   }
-
-  // A signature of the server graph. Passed to the editor as `revision` so it
-  // reconciles its local rooms when the data changes — WITHOUT remounting (which
-  // would reload the plan image and reset zoom/scroll on every edit).
-  const graphKey =
-    nodes
-      .map(
-        (n) =>
-          `${n.id}:${n.type}:${n.name}:${n.pos_x}:${n.pos_y}:${JSON.stringify(n.metadata)}`,
-      )
-      .join("|") +
-    "#" +
-    edges.map((e) => `${e.id}:${e.certain}`).join("|") +
-    "#" +
-    photoPaths.map((p) => p.storage_path).join(",")
 
   return (
     <div className="flex h-screen flex-1 flex-col">
@@ -156,17 +150,10 @@ export default async function ProjectPage({
           />
         </aside>
         <div className="relative min-h-0 flex-1">
-          {nodes.length === 0 ? (
-            <PlanDropzone projectId={project.id} />
+          {project.plan_path ? (
+            <PlanView overlayUrl={overlayUrl} planUrl={planUrl} />
           ) : (
-            <PlanEditor
-              key={project.plan_path ?? "no-plan"}
-              revision={graphKey}
-              projectId={project.id}
-              planUrl={planUrl}
-              nodes={nodes}
-              photosByNode={photosByNode}
-            />
+            <PlanDropzone projectId={project.id} />
           )}
         </div>
       </div>

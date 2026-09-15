@@ -1,37 +1,34 @@
-import type { ExtractedGraphJSON } from "@/lib/vision/extracted"
+import type { ExtractedNodeJSON, ExtractedEdgeJSON } from "@/lib/vision/extracted"
 
-// Public URL of the Python /extractor service. Read in the BROWSER (hence
-// NEXT_PUBLIC_), so the heavy plan→graph call runs off Netlify — whose Free
-// functions cap at ~10s, too short for the full pipeline.
+// Public URL of the Python extractor/colorize service. Read in the BROWSER
+// (NEXT_PUBLIC_) so the heavy plan processing runs off Netlify, whose Free
+// functions cap at ~10s.
 export const EXTRACTOR_URL = process.env.NEXT_PUBLIC_EXTRACTOR_URL
 
-// Extraction parameters (ExtractorParams JSON). The service defaults (Otsu, no
-// wall-closing) detect NOTHING on real greyscale plans — adaptive thresholding
-// plus wall-closing is what makes rooms segment. Override per deployment with
-// NEXT_PUBLIC_EXTRACTOR_PARAMS (raise min_region_area_pct to merge tiny areas).
-const DEFAULT_PARAMS = JSON.stringify({
-  binarization: "adaptive",
-  wall_close_ksize: 7,
-  min_region_area_pct: 0.05,
-})
+export type ColorizeResult = {
+  // Base64-encoded PNG of the plan with each room coloured up to the walls.
+  overlay_png_b64: string
+  // Simple room + adjacency graph (VLM, best-effort; may be empty).
+  nodes: ExtractedNodeJSON[]
+  edges: ExtractedEdgeJSON[]
+}
 
-// Sends the plan image straight from the browser to the extractor and returns
-// its spatial-graph JSON. The browser has no request timeout, so a slow/cold
-// service is fine here (unlike a serverless function).
-export async function extractViaRender(file: Blob): Promise<ExtractedGraphJSON> {
+// Sends the plan straight from the browser to /colorize and returns the coloured
+// overlay + a simple room/adjacency graph. No request timeout in the browser, so
+// a slow/cold service or a slow VLM call is fine here.
+export async function colorizePlan(file: Blob): Promise<ColorizeResult> {
   if (!EXTRACTOR_URL) throw new Error("NEXT_PUBLIC_EXTRACTOR_URL is not set")
 
   const form = new FormData()
   form.append("file", file, "plan.png")
-  form.append("params", process.env.NEXT_PUBLIC_EXTRACTOR_PARAMS || DEFAULT_PARAMS)
 
-  const res = await fetch(`${EXTRACTOR_URL.replace(/\/$/, "")}/extract`, {
+  const res = await fetch(`${EXTRACTOR_URL.replace(/\/$/, "")}/colorize`, {
     method: "POST",
     body: form,
   })
   if (!res.ok) {
     const detail = await res.text().catch(() => "")
-    throw new Error(`Extractor error ${res.status}: ${detail}`)
+    throw new Error(`Colorize error ${res.status}: ${detail}`)
   }
-  return (await res.json()) as ExtractedGraphJSON
+  return (await res.json()) as ColorizeResult
 }

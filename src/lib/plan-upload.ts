@@ -30,3 +30,30 @@ export async function uploadPlanToStorage(
 
   return path
 }
+
+// Stores the coloured overlay (base64 PNG from /colorize) next to the plan at a
+// conventional path the project page derives from plan_path — no DB column.
+export async function uploadOverlayToStorage(
+  projectId: string,
+  base64Png: string,
+): Promise<string> {
+  const supabase = createClient()
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser()
+  if (userErr || !user) {
+    throw new Error("Your session expired — please sign in again.")
+  }
+
+  const path = `${user.id}/${projectId}/overlay.png`
+  const bytes = Uint8Array.from(atob(base64Png), (c) => c.charCodeAt(0))
+  const blob = new Blob([bytes], { type: "image/png" })
+
+  const { error } = await supabase.storage
+    .from("plans")
+    .upload(path, blob, { upsert: true, contentType: "image/png" })
+  if (error) throw new Error(error.message)
+
+  return path
+}

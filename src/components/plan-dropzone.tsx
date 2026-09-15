@@ -3,8 +3,12 @@
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { generatePlanGraph, saveExtractedGraph } from "@/app/projects/actions"
-import { uploadPlanToStorage, MAX_PLAN_BYTES } from "@/lib/plan-upload"
-import { extractViaRender, EXTRACTOR_URL } from "@/lib/plan-extract"
+import {
+  uploadPlanToStorage,
+  uploadOverlayToStorage,
+  MAX_PLAN_BYTES,
+} from "@/lib/plan-upload"
+import { colorizePlan, EXTRACTOR_URL } from "@/lib/plan-extract"
 
 // If detection hasn't finished in this long, assume something is stuck and
 // surface an error instead of spinning forever. Generous because a cold
@@ -49,16 +53,17 @@ export function PlanDropzone({ projectId }: { projectId: string }) {
     try {
       const path = await uploadPlanToStorage(projectId, file)
       if (EXTRACTOR_URL) {
-        // Heavy plan→graph runs in the browser (off Netlify's ~10s cap); the
-        // server action only persists the result.
-        const extracted = await extractViaRender(file)
-        await saveExtractedGraph(projectId, extracted, path)
+        // Heavy work runs in the browser (off Netlify's ~10s cap): the service
+        // returns the coloured overlay + a simple room/adjacency graph.
+        const { overlay_png_b64, nodes, edges } = await colorizePlan(file)
+        await uploadOverlayToStorage(projectId, overlay_png_b64)
+        await saveExtractedGraph(projectId, { nodes, edges, width: 0, height: 0 }, path)
       } else {
         // Local/dev without an extractor: fall back to the server pipeline.
         await generatePlanGraph(projectId, path)
       }
       clearTimeout(watchdog)
-      router.refresh() // graph now exists → page swaps in the editor
+      router.refresh() // plan now processed → page swaps in the coloured view
     } catch (e) {
       clearTimeout(watchdog)
       setBusy(false)
