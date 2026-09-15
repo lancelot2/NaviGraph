@@ -14,8 +14,11 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
+import base64
+
 from .. import __version__
 from ..colorize import colorize_plan
+from ..detect import detect_rooms
 from ..config import ExtractorParams
 from ..labeling.base import Labeler
 from ..labeling.mock import MockLabeler
@@ -82,8 +85,14 @@ async def colorize(
     file: UploadFile = File(...),
     wall_dilate: int = Form(13),
     min_area_pct: float = Form(0.25),
-) -> Response:
-    """Plan image -> PNG with each room coloured up to the walls (pure OpenCV)."""
+) -> JSONResponse:
+    """Plan image -> { overlay_png_b64, nodes, edges }.
+
+    - overlay_png_b64: the coloured plan (pure OpenCV, required).
+    - nodes/edges: simple VLM room + adjacency detection (best-effort — an empty
+      graph is returned if detection is unavailable/fails; the image still ships).
+    Loosely coupled: the graph is panel data, not tied to the coloured regions.
+    """
     data = await file.read()
     if not data:
         return JSONResponse(status_code=400, content={"error": "empty file"})
@@ -91,4 +100,15 @@ async def colorize(
         png = colorize_plan(data, wall_dilate=wall_dilate, min_area_pct=min_area_pct)
     except ValueError as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
-    return Response(content=png, media_type="image/png")
+
+    graph = {"nodes": [], "edges": []}
+    try:
+        graph = detect_rooms(data)
+    except Exception as e:  # never lose the image over a detection failure
+        print("detect_rooms failed:", e)
+
+    return JSONResponse(content={
+        "overlay_png_b64": base64.b64encode(png).decode("ascii"),
+        "nodes": graph["nodes"],
+        "edges": graph["edges"],
+    })
