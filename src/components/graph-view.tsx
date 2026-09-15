@@ -1,18 +1,24 @@
 "use client"
 
-import { createElement, useMemo } from "react"
+import { createElement, useEffect } from "react"
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   Handle,
   Position,
+  useNodesState,
+  useEdgesState,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeProps,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import type { GraphNode, GraphEdge, EdgeType } from "@/lib/graph/types"
+import { useEditorStore } from "@/lib/store/editor"
+import { setNodePosition } from "@/app/projects/spatial-actions"
 import { roomIcon } from "./room-icon"
 
 type RoomData = {
@@ -20,14 +26,19 @@ type RoomData = {
   photo?: string
   objects: string[]
   score: number
+  isSelected: boolean
 }
 
 // Custom React Flow node: photo thumbnail (or a name-based icon when none),
-// room name, a completeness score, and object tags.
+// room name, a completeness score, and object tags. Highlights when selected.
 function RoomNode({ data }: NodeProps) {
   const d = data as unknown as RoomData
   return (
-    <div className="w-56 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <div
+      className={`w-56 overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow ${
+        d.isSelected ? "border-blue-500 ring-2 ring-blue-500/40" : "border-border"
+      }`}
+    >
       <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-muted-foreground" />
       <div className="relative h-28 w-full bg-secondary">
         {d.photo ? (
@@ -68,52 +79,119 @@ function edgeLabel(type: EdgeType): string {
   return "passage"
 }
 
-export function GraphView({
+function buildNodes(
+  nodes: GraphNode[],
+  photosByNode: Record<string, string[]>,
+  selectedId: string | null,
+): Node[] {
+  return nodes.map((n) => {
+    const photos = photosByNode[n.id] ?? []
+    const objects = n.metadata.objects ?? []
+    const score = Math.min(100, 40 + (photos.length ? 30 : 0) + Math.min(30, objects.length * 10))
+    return {
+      id: n.id,
+      type: "room",
+      position: { x: n.pos_x, y: n.pos_y },
+      data: {
+        name: n.name?.trim() || "Pièce",
+        photo: photos[0],
+        objects,
+        score,
+        isSelected: n.id === selectedId,
+      },
+    }
+  })
+}
+
+function buildEdges(edges: GraphEdge[]): Edge[] {
+  return edges.map((e) => ({
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    label: edgeLabel(e.type),
+    style: { stroke: "#94a3b8" },
+    labelStyle: { fontSize: 11, fill: "#475569" },
+    labelBgStyle: { fill: "#ffffff", fillOpacity: 0.9 },
+    labelBgPadding: [4, 2] as [number, number],
+    labelBgBorderRadius: 4,
+  }))
+}
+
+function GraphFlow({
+  projectId,
   nodes,
   edges,
   photosByNode,
 }: {
+  projectId: string
   nodes: GraphNode[]
   edges: GraphEdge[]
   photosByNode: Record<string, string[]>
 }) {
-  const rfNodes: Node[] = useMemo(() => {
-    const cols = Math.max(3, Math.ceil(Math.sqrt(nodes.length || 1)))
-    return nodes.map((n, i) => {
-      const photos = photosByNode[n.id] ?? []
-      const objects = n.metadata.objects ?? []
-      const score = Math.min(100, 40 + (photos.length ? 30 : 0) + Math.min(30, objects.length * 10))
-      return {
-        id: n.id,
-        type: "room",
-        position: { x: (i % cols) * 300, y: Math.floor(i / cols) * 250 },
-        data: { name: n.name?.trim() || "Pièce", photo: photos[0], objects, score },
-      }
-    })
-  }, [nodes, photosByNode])
+  const selectedId = useEditorStore((s) => s.selectedId)
+  const setSelectedId = useEditorStore((s) => s.setSelectedId)
+  const [rfNodes, setRfNodes, onNodesChange] = useNodesState<Node>([])
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const { getNode, setCenter } = useReactFlow()
 
-  const rfEdges: Edge[] = useMemo(
-    () =>
-      edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        label: edgeLabel(e.type),
-        style: { stroke: "#94a3b8" },
-        labelStyle: { fontSize: 11, fill: "#475569" },
-        labelBgStyle: { fill: "#ffffff", fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
-      })),
-    [edges],
-  )
+  // Rebuild from server data when the graph changes (new detection / reload).
+  // Intentionally excludes selectedId so re-selecting never resets positions.
+  useEffect(() => {
+    setRfNodes(buildNodes(nodes, photosByNode, useEditorStore.getState().selectedId))
+  }, [nodes, photosByNode, setRfNodes])
+
+  useEffect(() => {
+    setRfEdges(buildEdges(edges))
+  }, [edges, setRfEdges])
+
+  // Reflect the shared selection (e.g. a click in the Catalogue) onto the graph,
+  // preserving live positions, and bring the selected card into view.
+  useEffect(() => {
+    setRfNodes((ns) =>
+      ns.map((n) => ({ ...n, data: { ...n.data, isSelected: n.id === selectedId } })),
+    )
+    if (selectedId) {
+      const n = getNode(selectedId)
+      if (n) setCenter(n.position.x + 112, n.position.y + 96, { zoom: 1.15, duration: 400 })
+    }
+  }, [selectedId, getNode, setCenter, setRfNodes])
 
   return (
     <div className="h-full w-full">
-      <ReactFlow nodes={rfNodes} edges={rfEdges} nodeTypes={nodeTypes} fitView>
+      <ReactFlow
+        nodes={rfNodes}
+        edges={rfEdges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={(_, node) => {
+          const cur = useEditorStore.getState().selectedId
+          setSelectedId(cur === node.id ? null : node.id)
+        }}
+        onNodeDragStop={(_, node) => {
+          void setNodePosition(projectId, node.id, node.position.x, node.position.y)
+        }}
+        onPaneClick={() => setSelectedId(null)}
+        selectNodesOnDrag={false}
+        fitView
+      >
         <Background />
         <Controls />
       </ReactFlow>
     </div>
+  )
+}
+
+// ReactFlowProvider is required for the useReactFlow hook (centering on select).
+export function GraphView(props: {
+  projectId: string
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+  photosByNode: Record<string, string[]>
+}) {
+  return (
+    <ReactFlowProvider>
+      <GraphFlow {...props} />
+    </ReactFlowProvider>
   )
 }

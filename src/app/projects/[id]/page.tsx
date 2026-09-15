@@ -152,6 +152,7 @@ export default async function ProjectPage({
         <div className="relative min-h-0 flex-1">
           {project.plan_path ? (
             <PlanWorkspace
+              projectId={project.id}
               overlayUrl={overlayUrl}
               planUrl={planUrl}
               nodes={nodes}
