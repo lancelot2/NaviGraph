@@ -62,7 +62,12 @@ def detect_rooms(image_bytes: bytes, *, model: str | None = None, timeout: float
     parsed = json.loads(payload["choices"][0]["message"]["content"])
 
     rooms = parsed.get("rooms", []) or []
-    cols = max(1, int(math.ceil(math.sqrt(max(1, len(rooms))))))
+    cols = max(3, int(math.ceil(math.sqrt(max(1, len(rooms))))))
+    # Seed a well-spaced grid in React Flow coordinate space. mapExtractedToParsed
+    # turns centroid into pos_x/pos_y as centroid*[800,600], so we pre-divide to
+    # land on a clean grid (pos_x=col*COL_W+40, pos_y=row*ROW_H+40). Dragging in
+    # the graph view then persists real positions over these.
+    COL_W, ROW_H = 300, 250
     nodes = []
     ids = set()
     for k, room in enumerate(rooms):
@@ -70,9 +75,8 @@ def detect_rooms(image_bytes: bytes, *, model: str | None = None, timeout: float
         ids.add(rid)
         rtype = room.get("type")
         rtype = rtype if rtype in _ALLOWED else "room"
-        # Grid centroid so nodes get a spread-out layout position (no real geometry).
-        gx = ((k % cols) + 0.5) / cols
-        gy = ((k // cols) + 0.5) / cols
+        gx = ((k % cols) * COL_W + 40) / 800.0
+        gy = ((k // cols) * ROW_H + 40) / 600.0
         nodes.append({
             "id": rid, "kind": "space", "type": rtype,
             "label": room.get("name"), "confidence": 1.0,

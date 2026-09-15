@@ -7,12 +7,14 @@ import type { GraphNode, GraphEdge } from "@/lib/graph/types"
 
 // Main-area workspace with two tabs: the coloured plan image and the room graph.
 export function PlanWorkspace({
+  projectId,
   overlayUrl,
   planUrl,
   nodes,
   edges,
   photosByNode,
 }: {
+  projectId: string
   overlayUrl: string | null
   planUrl: string | null
   nodes: GraphNode[]
@@ -35,7 +37,12 @@ export function PlanWorkspace({
         {tab === "plan" ? (
           <PlanView overlayUrl={overlayUrl} planUrl={planUrl} />
         ) : (
-          <GraphView nodes={nodes} edges={edges} photosByNode={photosByNode} />
+          <GraphView
+            projectId={projectId}
+            nodes={nodes}
+            edges={edges}
+            photosByNode={photosByNode}
+          />
         )}
       </div>
     </div>

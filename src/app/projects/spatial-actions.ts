@@ -29,6 +29,23 @@ export async function addNode(
   return id
 }
 
+// Persist a node's graph-view position (React Flow coordinates). No revalidate:
+// the client keeps its live layout; the DB is the source of truth on reload.
+export async function setNodePosition(
+  projectId: string,
+  nodeId: string,
+  x: number,
+  y: number,
+): Promise<void> {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("nodes")
+    .update({ pos_x: Math.round(x), pos_y: Math.round(y) })
+    .eq("id", nodeId)
+    .eq("project_id", projectId)
+  if (error) throw new Error(error.message)
+}
+
 // Create a polygon object from click-to-draw points (normalized [0,1]). Returns
 // the new node id so the caller can select it immediately.
 export async function addPolygonNode(
