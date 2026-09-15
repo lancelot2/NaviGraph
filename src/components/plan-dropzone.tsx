@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { generatePlanGraph, saveExtractedGraph } from "@/app/projects/actions"
 import {
@@ -133,7 +134,7 @@ export function PlanDropzone({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-8">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 p-8">
       <div
         role="button"
         tabIndex={0}
@@ -187,6 +188,17 @@ export function PlanDropzone({ projectId }: { projectId: string }) {
           We&apos;ll detect rooms and their connections automatically.
         </p>
       </div>
+
+      <Link
+        href={`/projects/${projectId}/scan`}
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ou{" "}
+        <span className="font-medium text-foreground underline underline-offset-4">
+          scanner en vidéo
+        </span>{" "}
+        en commentant à voix haute →
+      </Link>
     </div>
   )
 }

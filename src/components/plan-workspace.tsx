@@ -21,7 +21,10 @@ export function PlanWorkspace({
   edges: GraphEdge[]
   photosByNode: Record<string, string[]>
 }) {
-  const [tab, setTab] = useState<"plan" | "graph">("plan")
+  // Default to the graph for scan projects (no plan image to colour).
+  const [tab, setTab] = useState<"plan" | "graph">(
+    overlayUrl || planUrl ? "plan" : "graph",
+  )
 
   return (
     <div className="flex h-full w-full flex-col">
