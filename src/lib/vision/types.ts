@@ -20,6 +20,8 @@ export type ParsedNode = {
   bounds?: Bounds
   // Normalized [0,1] polygon outline; supersedes `bounds` when present.
   points?: Point[]
+  // Notable objects in the room (video-walkthrough modality) → metadata.objects.
+  objects?: string[]
 }
 
 export type ParsedEdge = {

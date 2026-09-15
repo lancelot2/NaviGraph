@@ -17,6 +17,7 @@ export type ExtractedNodeJSON = {
   confidence: number
   polygon: number[][] // normalized [0,1]
   centroid: number[] // normalized [0,1]
+  objects?: string[] // per-room objects (video-walkthrough modality)
 }
 export type ExtractedEdgeJSON = {
   source: string
@@ -52,6 +53,9 @@ export function mapExtractedToParsed(graph: ExtractedGraphJSON): ParsedGraph {
       : []
     const cx = Number(n.centroid?.[0] ?? 0)
     const cy = Number(n.centroid?.[1] ?? 0)
+    const objects = Array.isArray(n.objects)
+      ? n.objects.map((o) => String(o)).filter(Boolean)
+      : undefined
     return {
       tempId: String(n.id),
       type: coerceType(n.type, n.kind),
@@ -61,6 +65,7 @@ export function mapExtractedToParsed(graph: ExtractedGraphJSON): ParsedGraph {
       pos_x: Math.round(cx * CANVAS_W),
       pos_y: Math.round(cy * CANVAS_H),
       points: pts.length >= 3 ? pts : undefined,
+      objects: objects && objects.length ? objects : undefined,
     }
   })
 

@@ -226,11 +226,10 @@ async function persistParsedGraph(
       floor: n.floor,
       pos_x: n.pos_x,
       pos_y: n.pos_y,
-      metadata: n.points
-        ? { points: n.points }
-        : n.bounds
-          ? { bounds: n.bounds }
-          : {},
+      metadata: {
+        ...(n.points ? { points: n.points } : n.bounds ? { bounds: n.bounds } : {}),
+        ...(n.objects?.length ? { objects: n.objects } : {}),
+      },
     }
   })
 
