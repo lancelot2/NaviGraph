@@ -7,8 +7,12 @@ import {
   regenerateGraph,
   saveExtractedGraph,
 } from "@/app/projects/actions"
-import { uploadPlanToStorage, MAX_PLAN_BYTES } from "@/lib/plan-upload"
-import { extractViaRender, EXTRACTOR_URL } from "@/lib/plan-extract"
+import {
+  uploadPlanToStorage,
+  uploadOverlayToStorage,
+  MAX_PLAN_BYTES,
+} from "@/lib/plan-upload"
+import { colorizePlan, EXTRACTOR_URL } from "@/lib/plan-extract"
 import { Button } from "@/components/ui/button"
 
 export function PlanPanel({
@@ -38,8 +42,9 @@ export function PlanPanel({
     try {
       const path = await uploadPlanToStorage(projectId, file)
       if (EXTRACTOR_URL) {
-        const extracted = await extractViaRender(file)
-        await saveExtractedGraph(projectId, extracted, path)
+        const { overlay_png_b64, nodes, edges } = await colorizePlan(file)
+        await uploadOverlayToStorage(projectId, overlay_png_b64)
+        await saveExtractedGraph(projectId, { nodes, edges, width: 0, height: 0 }, path)
       } else {
         await generatePlanGraph(projectId, path)
       }
@@ -79,10 +84,11 @@ export function PlanPanel({
             setBusy(true)
             try {
               if (EXTRACTOR_URL && planUrl) {
-                // Re-run detection in the browser from the stored plan image.
+                // Re-run colouring + detection in the browser from the stored plan.
                 const blob = await (await fetch(planUrl)).blob()
-                const extracted = await extractViaRender(blob)
-                await saveExtractedGraph(projectId, extracted)
+                const { overlay_png_b64, nodes, edges } = await colorizePlan(blob)
+                await uploadOverlayToStorage(projectId, overlay_png_b64)
+                await saveExtractedGraph(projectId, { nodes, edges, width: 0, height: 0 })
               } else {
                 await regenerateGraph(projectId)
               }
