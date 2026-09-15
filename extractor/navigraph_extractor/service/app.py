@@ -12,9 +12,10 @@ from typing import Optional
 
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from .. import __version__
+from ..colorize import colorize_plan
 from ..config import ExtractorParams
 from ..labeling.base import Labeler
 from ..labeling.mock import MockLabeler
@@ -74,3 +75,20 @@ async def extract(
         data, cfg, _make_labeler(), use_llm_connections=_use_llm_connections()
     )
     return JSONResponse(content=graph_to_dict(graph))
+
+
+@app.post("/colorize")
+async def colorize(
+    file: UploadFile = File(...),
+    wall_dilate: int = Form(13),
+    min_area_pct: float = Form(0.25),
+) -> Response:
+    """Plan image -> PNG with each room coloured up to the walls (pure OpenCV)."""
+    data = await file.read()
+    if not data:
+        return JSONResponse(status_code=400, content={"error": "empty file"})
+    try:
+        png = colorize_plan(data, wall_dilate=wall_dilate, min_area_pct=min_area_pct)
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    return Response(content=png, media_type="image/png")
