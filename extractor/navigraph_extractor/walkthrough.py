@@ -9,6 +9,7 @@ carry no polygon; positions are a spaced grid the user can rearrange.
 
 from __future__ import annotations
 
+import base64
 import json
 import math
 import os
@@ -75,15 +76,15 @@ def _transcribe(video_bytes: bytes, filename: str, token: str) -> str:
         return ""
 
 
-def _analyze(transcript: str, keyframes: list, token: str, model: str) -> dict:
+def _analyze(transcript: str, keyframes: list[bytes], token: str, model: str) -> dict:
     content: list[dict[str, Any]] = [
         {"type": "text", "text": f'TRANSCRIPT:\n"""\n{transcript}\n"""\n\nKEY FRAMES:'}
     ]
-    for f in keyframes:
-        b64 = (f or {}).get("base64", "")
-        if not b64:
+    for img in keyframes:
+        if not img:
             continue
-        url = b64 if b64.startswith("data:") else "data:image/jpeg;base64," + b64
+        mime = "image/png" if img[:8] == b"\x89PNG\r\n\x1a\n" else "image/jpeg"
+        url = f"data:{mime};base64," + base64.b64encode(img).decode("ascii")
         content.append({"type": "image_url", "image_url": {"url": url}})
 
     body = {
@@ -106,8 +107,8 @@ def _analyze(transcript: str, keyframes: list, token: str, model: str) -> dict:
     return json.loads(payload["choices"][0]["message"]["content"])
 
 
-def analyze_walkthrough(video_bytes: bytes, filename: str, keyframes: list) -> dict:
-    """(video, key frames) -> {"nodes","edges","transcript"} (ExtractedGraphJSON shape)."""
+def analyze_walkthrough(video_bytes: bytes, filename: str, keyframes: list[bytes]) -> dict:
+    """(video, key-frame image bytes) -> {"nodes","edges","transcript"} (ExtractedGraphJSON shape)."""
     token = os.environ.get("OPENAI_API_KEY")
     if not token:
         raise ValueError("OPENAI_API_KEY not set")
