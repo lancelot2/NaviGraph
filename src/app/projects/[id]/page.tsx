@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PlanPanel } from "@/components/plan-panel"
 import { PlanDropzone } from "@/components/plan-dropzone"
-import { PlanView } from "@/components/plan-view"
+import { PlanWorkspace } from "@/components/plan-workspace"
 import { KnowledgePanel } from "@/components/knowledge-panel"
 import { EnrichmentAssistant } from "@/components/enrichment-assistant"
 import { SidebarTabs } from "@/components/sidebar-tabs"
@@ -151,7 +151,13 @@ export default async function ProjectPage({
         </aside>
         <div className="relative min-h-0 flex-1">
           {project.plan_path ? (
-            <PlanView overlayUrl={overlayUrl} planUrl={planUrl} />
+            <PlanWorkspace
+              overlayUrl={overlayUrl}
+              planUrl={planUrl}
+              nodes={nodes}
+              edges={edges}
+              photosByNode={photosByNode}
+            />
           ) : (
             <PlanDropzone projectId={project.id} />
           )}
