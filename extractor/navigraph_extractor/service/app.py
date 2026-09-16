@@ -7,6 +7,7 @@ NAVIGRAPH_LABELER=openai (with OPENAI_API_KEY) to label with a VLM.
 
 from __future__ import annotations
 
+import json
 import os
 from typing import Optional
 
@@ -86,33 +87,63 @@ async def colorize(
     file: UploadFile = File(...),
     wall_dilate: int = Form(13),
     min_area_pct: float = Form(0.25),
+    polygons: Optional[str] = Form(None),
+    detect: bool = Form(True),
 ) -> JSONResponse:
     """Plan image -> { overlay_png_b64, nodes, edges }.
 
     - overlay_png_b64: the coloured plan (pure OpenCV, required).
     - nodes/edges: simple VLM room + adjacency detection (best-effort — an empty
       graph is returned if detection is unavailable/fails; the image still ships).
+    - polygons: optional JSON array of hand-drawn room outlines (normalized [0,1]
+      points, e.g. [[{"x":0.1,"y":0.2}, ...], ...]) painted onto the overlay.
+    - detect: set false to skip room detection and only re-colour (used when the
+      caller manages the graph itself, e.g. after adding a room by hand — so the
+      re-colour never wipes manually created rooms).
     Loosely coupled: the graph is panel data, not tied to the coloured regions.
     """
     data = await file.read()
     if not data:
         return JSONResponse(status_code=400, content={"error": "empty file"})
     try:
-        png = colorize_plan(data, wall_dilate=wall_dilate, min_area_pct=min_area_pct)
+        parsed = _parse_polygons(polygons)
+    except (ValueError, TypeError) as e:
+        return JSONResponse(status_code=400, content={"error": f"bad polygons: {e}"})
+    try:
+        png = colorize_plan(
+            data,
+            wall_dilate=wall_dilate,
+            min_area_pct=min_area_pct,
+            polygons=parsed,
+        )
     except ValueError as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
 
     graph = {"nodes": [], "edges": []}
-    try:
-        graph = detect_rooms(data)
-    except Exception as e:  # never lose the image over a detection failure
-        print("detect_rooms failed:", e)
+    if detect:
+        try:
+            graph = detect_rooms(data)
+        except Exception as e:  # never lose the image over a detection failure
+            print("detect_rooms failed:", e)
 
     return JSONResponse(content={
         "overlay_png_b64": base64.b64encode(png).decode("ascii"),
         "nodes": graph["nodes"],
         "edges": graph["edges"],
     })
+
+
+def _parse_polygons(raw: Optional[str]) -> list[list[tuple[float, float]]]:
+    """Parse the `polygons` form field into normalized (x, y) outlines."""
+    if not raw or not raw.strip():
+        return []
+    data = json.loads(raw)
+    out: list[list[tuple[float, float]]] = []
+    for poly in data:
+        pts = [(float(p["x"]), float(p["y"])) for p in poly]
+        if len(pts) >= 3:
+            out.append(pts)
+    return out
 
 
 @app.post("/walkthrough")

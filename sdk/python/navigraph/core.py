@@ -80,6 +80,44 @@ def node_name(n: GraphNode) -> str:
     return (n.name or "").strip() or f"unnamed {n.type}"
 
 
+# Ordinal / qualifier synonyms folded onto a canonical digit token, so
+# "secondary bedroom" matches "Bedroom 2" and "master bedroom" matches
+# "Bedroom 1". Mirrors ORDINALS in core.ts for parity.
+_ORDINALS = {
+    "first": "1", "primary": "1", "main": "1", "master": "1", "1st": "1",
+    "second": "2", "secondary": "2", "2nd": "2",
+    "third": "3", "tertiary": "3", "3rd": "3",
+    "fourth": "4", "4th": "4",
+    "fifth": "5", "5th": "5",
+    "sixth": "6", "6th": "6",
+}
+# Structural words dropped from a candidate name before token-matching.
+_STOP = {"of", "the", "a", "an", "and", "or"}
+
+
+def _normalize_tokens(s: str) -> list[str]:
+    """Lowercased alphanumeric tokens, folding ordinal synonyms to digits."""
+    return [
+        _ORDINALS.get(w, w)
+        for w in re.split(r"[^a-z0-9]+", s.lower())
+        if w
+    ]
+
+
+def _significant_tokens(s: str) -> list[str]:
+    return [t for t in _normalize_tokens(s) if t not in _STOP]
+
+
+def _candidates_of(node: GraphNode) -> list[str]:
+    meta = node.metadata
+    return (
+        [node.name or ""]
+        + list(meta.get("synonyms") or [])
+        + list(meta.get("landmarks") or [])
+        + list(meta.get("signs") or [])
+    )
+
+
 def _match_node_in_text(
     graph: SpatialGraph, text: str, exclude_id: Optional[str] = None
 ) -> Optional[GraphNode]:
@@ -90,33 +128,53 @@ def _match_node_in_text(
     for node in graph.nodes:
         if exclude_id and node.id == exclude_id:
             continue
-        meta = node.metadata
-        candidates = (
-            [node.name or ""]
-            + list(meta.get("synonyms") or [])
-            + list(meta.get("landmarks") or [])
-            + list(meta.get("signs") or [])
-        )
-        for c in candidates:
+        for c in _candidates_of(node):
             key = c.strip().lower()
             if len(key) >= 3 and key in lower and len(key) > best_len:
                 best = node
                 best_len = len(key)
+    if best is not None:
+        return best
+
+    # Fallback: every significant token of a candidate appears in the text (order
+    # independent). Requires a distinctive (>=3-char) token so a lone digit or
+    # short word can't match on its own. More matched tokens = more specific.
+    text_tokens = set(_normalize_tokens(text))
+    best_score = 0
+    for node in graph.nodes:
+        if exclude_id and node.id == exclude_id:
+            continue
+        for c in _candidates_of(node):
+            toks = _significant_tokens(c)
+            if not toks or not any(len(t) >= 3 for t in toks):
+                continue
+            if all(t in text_tokens for t in toks) and len(toks) > best_score:
+                best = node
+                best_score = len(toks)
     return best
+
+
+# Destination phrase cues, tried by signal strength: motion beats a locative,
+# which beats matching the whole instruction. Mirrors core.ts.
+_MOTION_CUE = r"\b(?:to|into|towards?|onto)\s+(.+)$"
+_LOCATIVE_CUE = r"\b(?:in|inside|within|at)\s+(.+)$"
 
 
 def _resolve_destination(
     graph: SpatialGraph, instruction: str, exclude_id: Optional[str] = None
 ) -> Optional[GraphNode]:
-    m = re.search(r"\bto\s+(.+)$", instruction.lower())
-    after_to = m.group(1) if m else None
-    result = (
-        _match_node_in_text(graph, after_to, exclude_id)
-        if after_to
-        else None
-    )
-    if result is not None:
-        return result
+    lower = instruction.lower()
+    motion_m = re.search(_MOTION_CUE, lower)
+    locative_m = re.search(_LOCATIVE_CUE, lower)
+
+    if motion_m:
+        result = _match_node_in_text(graph, motion_m.group(1), exclude_id)
+        if result is not None:
+            return result
+    if locative_m:
+        result = _match_node_in_text(graph, locative_m.group(1), exclude_id)
+        if result is not None:
+            return result
     return _match_node_in_text(graph, instruction, exclude_id)
 
 

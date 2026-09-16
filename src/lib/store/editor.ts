@@ -6,9 +6,15 @@ import { create } from "zustand"
 type EditorState = {
   selectedId: string | null
   setSelectedId: (id: string | null) => void
+  // Selected association (edge). Mirrors selectedId but for the graph's edges, so
+  // clicking an association in the Catalogue highlights it on the Graph and back.
+  selectedEdgeId: string | null
+  setSelectedEdgeId: (id: string | null) => void
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
   selectedId: null,
-  setSelectedId: (id) => set({ selectedId: id }),
+  setSelectedId: (id) => set({ selectedId: id, selectedEdgeId: null }),
+  selectedEdgeId: null,
+  setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedId: null }),
 }))

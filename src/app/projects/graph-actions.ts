@@ -51,6 +51,23 @@ export async function deleteEdge(projectId: string, edgeId: string) {
   await Graph.update(projectId, { kind: "deleteEdge", edgeId })
 }
 
+export async function setEdgeType(
+  projectId: string,
+  edgeId: string,
+  type: EdgeType,
+) {
+  await Graph.update(projectId, { kind: "setEdgeType", edgeId, type })
+}
+
+export async function setEdgeEndpoints(
+  projectId: string,
+  edgeId: string,
+  source: string,
+  target: string,
+) {
+  await Graph.update(projectId, { kind: "setEdgeEndpoints", edgeId, source, target })
+}
+
 export async function setNodeDescription(
   projectId: string,
   nodeId: string,
@@ -61,4 +78,12 @@ export async function setNodeDescription(
 
 export async function confirmEdge(projectId: string, edgeId: string) {
   await Graph.update(projectId, { kind: "setEdgeCertain", edgeId, certain: true })
+}
+
+export async function setEdgeCertain(
+  projectId: string,
+  edgeId: string,
+  certain: boolean,
+) {
+  await Graph.update(projectId, { kind: "setEdgeCertain", edgeId, certain })
 }

@@ -38,7 +38,12 @@ export function PlanWorkspace({
       </div>
       <div className="min-h-0 flex-1">
         {tab === "plan" ? (
-          <PlanView overlayUrl={overlayUrl} planUrl={planUrl} />
+          <PlanView
+            projectId={projectId}
+            overlayUrl={overlayUrl}
+            planUrl={planUrl}
+            nodes={nodes}
+          />
         ) : (
           <GraphView
             projectId={projectId}

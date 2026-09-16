@@ -34,8 +34,39 @@ export function nodeName(n: GraphNode): string {
   return n.name?.trim() || `unnamed ${n.type}`
 }
 
+// Ordinal / qualifier synonyms folded onto a canonical digit token, so
+// "secondary bedroom" matches "Bedroom 2" and "master bedroom" matches
+// "Bedroom 1". Kept small and shared with the Python core for parity.
+const ORDINALS: Record<string, string> = {
+  first: "1", primary: "1", main: "1", master: "1", "1st": "1",
+  second: "2", secondary: "2", "2nd": "2",
+  third: "3", tertiary: "3", "3rd": "3",
+  fourth: "4", "4th": "4",
+  fifth: "5", "5th": "5",
+  sixth: "6", "6th": "6",
+}
+// Tokens dropped from a candidate name before token-matching (structural words
+// a natural instruction won't repeat verbatim).
+const STOP = new Set(["of", "the", "a", "an", "and", "or"])
+
+// Split into lowercased alphanumeric tokens, folding ordinal synonyms to digits.
+function normalizeTokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .map((w) => ORDINALS[w] ?? w)
+}
+
+// A candidate's tokens minus structural stop-words.
+function significantTokens(s: string): string[] {
+  return normalizeTokens(s).filter((t) => !STOP.has(t))
+}
+
 // Find the room whose name, synonyms, or photo/tag-derived landmarks/signs best
-// appear in `text` (longest match wins, to avoid weak partial hits).
+// appear in `text`. Two passes: (1) substring match — longest wins, the strong,
+// precise signal; (2) if nothing matched, a token-subset fallback so paraphrases
+// like "the secondary bedroom" resolve to "Bedroom 2".
 function matchNodeInText(
   graph: SpatialGraph,
   text: string,
@@ -47,13 +78,7 @@ function matchNodeInText(
 
   for (const node of graph.nodes) {
     if (excludeId && node.id === excludeId) continue
-    const candidates = [
-      node.name ?? "",
-      ...(node.metadata.synonyms ?? []),
-      ...(node.metadata.landmarks ?? []),
-      ...(node.metadata.signs ?? []),
-    ]
-    for (const c of candidates) {
+    for (const c of candidatesOf(node)) {
       const key = c.trim().toLowerCase()
       if (key.length >= 3 && lower.includes(key) && key.length > bestLen) {
         best = node
@@ -61,21 +86,54 @@ function matchNodeInText(
       }
     }
   }
+  if (best) return best
+
+  // Fallback: every significant token of a candidate appears in the text (order
+  // independent). Requires a distinctive (≥3-char) token so a lone digit or
+  // short word can't match on its own. More matched tokens = more specific.
+  const textTokens = new Set(normalizeTokens(text))
+  let bestScore = 0
+  for (const node of graph.nodes) {
+    if (excludeId && node.id === excludeId) continue
+    for (const c of candidatesOf(node)) {
+      const toks = significantTokens(c)
+      if (toks.length === 0 || !toks.some((t) => t.length >= 3)) continue
+      if (toks.every((t) => textTokens.has(t)) && toks.length > bestScore) {
+        best = node
+        bestScore = toks.length
+      }
+    }
+  }
   return best
 }
 
-// Resolve the destination node from a free-text instruction. Prefer the phrase
-// after "to" (the strongest destination signal), falling back to the whole
-// instruction. `excludeId` keeps the resolved origin from also being picked as
-// the destination in "from A to B" phrasings.
+function candidatesOf(node: GraphNode): string[] {
+  return [
+    node.name ?? "",
+    ...(node.metadata.synonyms ?? []),
+    ...(node.metadata.landmarks ?? []),
+    ...(node.metadata.signs ?? []),
+  ]
+}
+
+// Destination phrase cues, tried in order of signal strength: motion ("go TO the
+// office", "INTO the hall") beats a locative ("the book IN the bedroom"), which
+// beats matching the whole instruction. `excludeId` keeps the resolved origin
+// from also being picked as the destination in "from A to B" phrasings.
+const MOTION_CUE = /\b(?:to|into|towards?|onto)\s+(.+)$/
+const LOCATIVE_CUE = /\b(?:in|inside|within|at)\s+(.+)$/
+
 function resolveDestination(
   graph: SpatialGraph,
   instruction: string,
   excludeId?: string,
 ): GraphNode | null {
-  const afterTo = instruction.toLowerCase().match(/\bto\s+(.+)$/)?.[1]
+  const lower = instruction.toLowerCase()
+  const motion = lower.match(MOTION_CUE)?.[1]
+  const locative = lower.match(LOCATIVE_CUE)?.[1]
   return (
-    (afterTo ? matchNodeInText(graph, afterTo, excludeId) : null) ??
+    (motion ? matchNodeInText(graph, motion, excludeId) : null) ??
+    (locative ? matchNodeInText(graph, locative, excludeId) : null) ??
     matchNodeInText(graph, instruction, excludeId)
   )
 }

@@ -103,18 +103,26 @@ function buildNodes(
   })
 }
 
-function buildEdges(edges: GraphEdge[]): Edge[] {
-  return edges.map((e) => ({
-    id: e.id,
-    source: e.source,
-    target: e.target,
-    label: edgeLabel(e.type),
-    style: { stroke: "#94a3b8" },
-    labelStyle: { fontSize: 11, fill: "#475569" },
-    labelBgStyle: { fill: "#ffffff", fillOpacity: 0.9 },
-    labelBgPadding: [4, 2] as [number, number],
-    labelBgBorderRadius: 4,
-  }))
+function buildEdges(edges: GraphEdge[], selectedEdgeId: string | null): Edge[] {
+  return edges.map((e) => {
+    const selected = e.id === selectedEdgeId
+    return {
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      label: edgeLabel(e.type),
+      selected,
+      animated: selected,
+      style: {
+        stroke: selected ? "#3b82f6" : "#94a3b8",
+        strokeWidth: selected ? 3 : 1,
+      },
+      labelStyle: { fontSize: 11, fill: selected ? "#1d4ed8" : "#475569" },
+      labelBgStyle: { fill: "#ffffff", fillOpacity: 0.9 },
+      labelBgPadding: [4, 2] as [number, number],
+      labelBgBorderRadius: 4,
+    }
+  })
 }
 
 function GraphFlow({
@@ -130,6 +138,8 @@ function GraphFlow({
 }) {
   const selectedId = useEditorStore((s) => s.selectedId)
   const setSelectedId = useEditorStore((s) => s.setSelectedId)
+  const selectedEdgeId = useEditorStore((s) => s.selectedEdgeId)
+  const setSelectedEdgeId = useEditorStore((s) => s.setSelectedEdgeId)
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<Node>([])
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([])
   const { getNode, setCenter } = useReactFlow()
@@ -140,9 +150,26 @@ function GraphFlow({
     setRfNodes(buildNodes(nodes, photosByNode, useEditorStore.getState().selectedId))
   }, [nodes, photosByNode, setRfNodes])
 
+  // Edges carry no live layout, so rebuilding on selection is cheap and keeps the
+  // highlight (Catalogue click ↔ graph) in sync.
   useEffect(() => {
-    setRfEdges(buildEdges(edges))
-  }, [edges, setRfEdges])
+    setRfEdges(buildEdges(edges, selectedEdgeId))
+  }, [edges, selectedEdgeId, setRfEdges])
+
+  // Bring the selected association into view (centre between its two endpoints).
+  useEffect(() => {
+    if (!selectedEdgeId) return
+    const e = edges.find((x) => x.id === selectedEdgeId)
+    if (!e) return
+    const a = getNode(e.source)
+    const b = getNode(e.target)
+    if (a && b)
+      setCenter(
+        (a.position.x + b.position.x) / 2 + 112,
+        (a.position.y + b.position.y) / 2 + 96,
+        { zoom: 1.1, duration: 400 },
+      )
+  }, [selectedEdgeId, edges, getNode, setCenter])
 
   // Reflect the shared selection (e.g. a click in the Catalogue) onto the graph,
   // preserving live positions, and bring the selected card into view.
@@ -168,10 +195,17 @@ function GraphFlow({
           const cur = useEditorStore.getState().selectedId
           setSelectedId(cur === node.id ? null : node.id)
         }}
+        onEdgeClick={(_, edge) => {
+          const cur = useEditorStore.getState().selectedEdgeId
+          setSelectedEdgeId(cur === edge.id ? null : edge.id)
+        }}
         onNodeDragStop={(_, node) => {
           void setNodePosition(projectId, node.id, node.position.x, node.position.y)
         }}
-        onPaneClick={() => setSelectedId(null)}
+        onPaneClick={() => {
+          setSelectedId(null)
+          setSelectedEdgeId(null)
+        }}
         selectNodesOnDrag={false}
         fitView
       >

@@ -49,6 +49,22 @@ const building: SpatialGraph = {
   ],
 }
 
+// A small flat exercising the token/ordinal fallback matcher: rooms named with a
+// trailing number resolved from qualifier words ("secondary" → 2, "master" → 1).
+const home: SpatialGraph = {
+  nodes: [
+    { id: "hallway", type: "room", name: "Hallway", description: null, floor: 0, pos_x: 0, pos_y: 0, metadata: {} },
+    { id: "living", type: "room", name: "Living Room", description: null, floor: 0, pos_x: 0, pos_y: 0, metadata: {} },
+    { id: "bedroom1", type: "room", name: "Bedroom 1", description: null, floor: 0, pos_x: 0, pos_y: 0, metadata: {} },
+    { id: "bedroom2", type: "room", name: "Bedroom 2", description: null, floor: 0, pos_x: 0, pos_y: 0, metadata: {} },
+  ],
+  edges: [
+    { id: "h1", source: "hallway", target: "living", type: "connected_to", certain: true },
+    { id: "h2", source: "hallway", target: "bedroom1", type: "connected_to", certain: true },
+    { id: "h3", source: "hallway", target: "bedroom2", type: "connected_to", certain: true },
+  ],
+}
+
 export type ParityCase = {
   name: string
   graph: SpatialGraph
@@ -115,5 +131,20 @@ export const cases: ParityCase[] = [
     name: "could_not_determine_location",
     graph: building,
     request: { instruction: "go somewhere nice" },
+  },
+  {
+    name: "locative_in_secondary_bedroom",
+    graph: home,
+    request: { instruction: "pick up the book in the secondary bedroom.", currentLocation: "Hallway" },
+  },
+  {
+    name: "qualifier_master_bedroom",
+    graph: home,
+    request: { instruction: "go to the master bedroom", currentLocation: "Hallway" },
+  },
+  {
+    name: "ordinal_bedroom_two_digit",
+    graph: home,
+    request: { instruction: "bring the towel to bedroom 2", currentLocation: "Hallway" },
   },
 ]

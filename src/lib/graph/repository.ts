@@ -19,6 +19,8 @@ export type GraphMutation =
   | { kind: "setNodeType"; nodeId: string; type: NodeType }
   | { kind: "setDescription"; nodeId: string; description: string }
   | { kind: "addEdge"; source: string; target: string; type: EdgeType }
+  | { kind: "setEdgeType"; edgeId: string; type: EdgeType }
+  | { kind: "setEdgeEndpoints"; edgeId: string; source: string; target: string }
   | { kind: "setEdgeCertain"; edgeId: string; certain: boolean }
   | { kind: "deleteEdge"; edgeId: string }
 
@@ -111,6 +113,22 @@ async function update(
         .from("nodes")
         .update({ description: mutation.description })
         .eq("id", mutation.nodeId)
+        .eq("project_id", projectId)
+      return {}
+
+    case "setEdgeType":
+      await supabase
+        .from("edges")
+        .update({ type: mutation.type })
+        .eq("id", mutation.edgeId)
+        .eq("project_id", projectId)
+      return {}
+
+    case "setEdgeEndpoints":
+      await supabase
+        .from("edges")
+        .update({ source: mutation.source, target: mutation.target })
+        .eq("id", mutation.edgeId)
         .eq("project_id", projectId)
       return {}
 

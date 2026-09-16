@@ -16,12 +16,15 @@ import {
   setNodeType,
   createEdge,
   deleteEdge,
+  setEdgeType,
+  setEdgeEndpoints,
+  setEdgeCertain,
 } from "@/app/projects/graph-actions"
 import { addNodePhoto } from "@/app/projects/actions"
-import { deleteNode, setNodeLandmarks } from "@/app/projects/spatial-actions"
+import { addNode, deleteNode, setNodeLandmarks } from "@/app/projects/spatial-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Link2, Tag, Image as ImageIcon } from "lucide-react"
+import { Link2, Tag, Image as ImageIcon, Plus } from "lucide-react"
 
 const COLOR: Record<NodeType, string> = {
   room: "#3b82f6",
@@ -46,6 +49,13 @@ const LABEL: Record<NodeType, string> = {
   opening: "Openings",
 }
 
+function edgeSummary(
+  e: GraphEdge,
+  nameById: Map<string, string>,
+): string {
+  return `${nameById.get(e.source) ?? "?"} ↔ ${nameById.get(e.target) ?? "?"}`
+}
+
 export function Catalogue({
   projectId,
   nodes,
@@ -59,15 +69,20 @@ export function Catalogue({
 }) {
   const selectedId = useEditorStore((s) => s.selectedId)
   const setSelectedId = useEditorStore((s) => s.setSelectedId)
+  const selectedEdgeId = useEditorStore((s) => s.selectedEdgeId)
+  const setSelectedEdgeId = useEditorStore((s) => s.setSelectedEdgeId)
   const nameById = new Map(
     nodes.map((n) => [n.id, n.name?.trim() || `Unnamed ${n.type}`]),
   )
 
   return (
     <div className="flex flex-col gap-4 p-3">
-      <p className="text-xs text-muted-foreground">
-        {nodes.length} objects · click one to edit it.
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {nodes.length} objects · {edges.length} associations
+        </p>
+        <AddObject projectId={projectId} onAdded={(id) => setSelectedId(id)} />
+      </div>
 
       {NODE_TYPES.map((type) => {
         const items = nodes.filter((n) => n.type === type)
@@ -125,11 +140,219 @@ export function Catalogue({
         )
       })}
 
+      {nodes.length > 0 && (
+        <div>
+          <h3 className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <Link2 className="h-3 w-3" /> Associations ({edges.length})
+          </h3>
+          {edges.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              None yet — open an object to link it to another.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-1">
+              {edges.map((e) => (
+                <li key={e.id}>
+                  <button
+                    onClick={() =>
+                      setSelectedEdgeId(selectedEdgeId === e.id ? null : e.id)
+                    }
+                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${
+                      selectedEdgeId === e.id ? "bg-muted" : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{edgeSummary(e, nameById)}</span>
+                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                      {e.type}
+                      {e.certain ? "" : " · ?"}
+                    </span>
+                  </button>
+
+                  {selectedEdgeId === e.id && (
+                    <EdgeEditor
+                      projectId={projectId}
+                      edge={e}
+                      nodes={nodes}
+                      nameById={nameById}
+                      onDeleted={() => setSelectedEdgeId(null)}
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {nodes.length === 0 && (
         <p className="text-sm text-muted-foreground">
           No objects yet — upload a plan or draw one on the plan.
         </p>
       )}
+    </div>
+  )
+}
+
+// Create a new object of a chosen type from the Catalogue (restores add-from-panel).
+function AddObject({
+  projectId,
+  onAdded,
+}: {
+  projectId: string
+  onAdded: (id: string) => void
+}) {
+  const router = useRouter()
+  const [type, setType] = useState<NodeType>("room")
+  const [busy, setBusy] = useState(false)
+  return (
+    <div className="flex shrink-0 items-center gap-1">
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value as NodeType)}
+        className="h-7 rounded-md border border-input bg-transparent px-1 text-xs"
+      >
+        {NODE_TYPES.map((t) => (
+          <option key={t} value={t}>
+            {t}
+          </option>
+        ))}
+      </select>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true)
+          try {
+            const id = await addNode(projectId, type)
+            onAdded(id)
+            router.refresh()
+          } finally {
+            setBusy(false)
+          }
+        }}
+      >
+        <Plus className="h-3.5 w-3.5" /> Add
+      </Button>
+    </div>
+  )
+}
+
+// Edit an association: its type, the two objects it connects, and its certainty.
+function EdgeEditor({
+  projectId,
+  edge,
+  nodes,
+  nameById,
+  onDeleted,
+}: {
+  projectId: string
+  edge: GraphEdge
+  nodes: GraphNode[]
+  nameById: Map<string, string>
+  onDeleted: () => void
+}) {
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+
+  async function run(fn: () => Promise<unknown>) {
+    setBusy(true)
+    try {
+      await fn()
+      router.refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function changeEndpoint(which: "source" | "target", value: string) {
+    const source = which === "source" ? value : edge.source
+    const target = which === "target" ? value : edge.target
+    if (source === target) return // an association must join two distinct objects
+    void run(() => setEdgeEndpoints(projectId, edge.id, source, target))
+  }
+
+  return (
+    <div className="mb-1 mt-1 flex flex-col gap-3 rounded-md border bg-white p-3">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+        <div className="grid gap-1">
+          <label className="text-xs text-muted-foreground">From</label>
+          <select
+            value={edge.source}
+            disabled={busy}
+            onChange={(e) => changeEndpoint("source", e.target.value)}
+            className="h-9 rounded-md border border-input bg-transparent px-1 text-sm"
+          >
+            {nodes.map((n) => (
+              <option key={n.id} value={n.id}>
+                {nameById.get(n.id)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <span className="pb-2 text-muted-foreground">↔</span>
+        <div className="grid gap-1">
+          <label className="text-xs text-muted-foreground">To</label>
+          <select
+            value={edge.target}
+            disabled={busy}
+            onChange={(e) => changeEndpoint("target", e.target.value)}
+            className="h-9 rounded-md border border-input bg-transparent px-1 text-sm"
+          >
+            {nodes.map((n) => (
+              <option key={n.id} value={n.id}>
+                {nameById.get(n.id)}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-1">
+        <label className="text-xs text-muted-foreground">Type</label>
+        <select
+          value={edge.type}
+          disabled={busy}
+          onChange={(e) =>
+            void run(() => setEdgeType(projectId, edge.id, e.target.value as EdgeType))
+          }
+          className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+        >
+          {EDGE_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={edge.certain}
+          disabled={busy}
+          onChange={(e) =>
+            void run(() => setEdgeCertain(projectId, edge.id, e.target.checked))
+          }
+        />
+        Certain
+      </label>
+
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-red-600"
+        disabled={busy}
+        onClick={() =>
+          void run(async () => {
+            await deleteEdge(projectId, edge.id)
+            onDeleted()
+          })
+        }
+      >
+        Delete association
+      </Button>
     </div>
   )
 }
