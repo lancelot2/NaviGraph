@@ -6,6 +6,38 @@ All notable changes to NaviGraph are documented here.
 small release; a **major** bump (`1.x` → `2.0.0`) marks a big one. The current
 version is also in [`package.json`](package.json) and tagged in git (`v1.1.0`).
 
+## [1.5.0] — 2026-09-16
+
+Two ways in (floor plan **or** walkthrough video), in-place room editing on the
+coloured plan, and a refreshed landing page.
+
+### Added
+- **Video walkthrough input.** Create a project by filming a narrated walkthrough
+  instead of uploading a plan. The `/walkthrough` service transcribes the audio
+  (Whisper) and a vision model extracts rooms, objects, and connections into the
+  spatial graph; capture runs in the browser and streams key frames to the
+  extractor on Render (off Netlify's ~10s function cap).
+- **Draw a room on the coloured plan.** With a plan loaded, trace a room polygon
+  directly on the *Plan coloré*, confirm it in a modal (name, plus optional tags,
+  photos, and associations), and the overlay is re-coloured to include it.
+  `/colorize` now accepts hand-drawn `polygons` and a `detect` flag so a re-colour
+  never overwrites the manually built graph.
+- **Association editing in the Catalogue.** Every association is listed and
+  selectable; edit its type, its two endpoints, and its certainty, with the
+  selection synced both ways between the Catalogue and the graph. Objects can be
+  added from the Catalogue again, and the coloured plan now zooms.
+
+### Changed
+- **Smarter destination resolution.** The context core now reads locative cues
+  ("pick up the book **in** the secondary bedroom") alongside motion cues, and
+  falls back to an ordinal/token match so "the secondary bedroom" resolves to
+  "Bedroom 2". Mirrored byte-for-byte in the Python core, with regenerated
+  parity fixtures.
+- **Landing page.** Refreshed design with a top bar (Log in / Sign up and a live
+  GitHub star badge) that blends into the hero when at the top, a section
+  covering both mapping inputs, and an updated headline now that floor plans are
+  no longer the only input.
+
 ## [1.4.0] — 2026-09-14
 
 ### Changed
@@ -107,6 +139,7 @@ robot-deployable project).
 - One-command **Docker self-host** (app + local Supabase, no OpenAI key required),
   GitHub Actions CI, and runnable `examples/`.
 
+[1.5.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.5.0
 [1.4.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.4.0
 [1.3.1]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.1
 [1.3.0]: https://github.com/lancelot2/NaviGraph/releases/tag/v1.3.0
