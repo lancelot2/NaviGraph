@@ -8,9 +8,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: var(--font-instrument), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
@@ -49,45 +49,45 @@
 }
 
 /*
-  Drafting studio — warm paper, ink, blueprint cobalt + drafting-pencil clay.
-  A light architectural aesthetic that sits naturally under floor-plan line art.
+  Paper, ink, and a clean royal blue — a light, precise product aesthetic that
+  sits naturally under floor-plan line art. Palette shared with the marketing UI.
 */
 :root {
-  --background: oklch(0.966 0.008 84);
-  --foreground: oklch(0.24 0.007 62);
-  --card: oklch(0.995 0.004 90);
-  --card-foreground: oklch(0.24 0.007 62);
-  --popover: oklch(0.995 0.004 90);
-  --popover-foreground: oklch(0.24 0.007 62);
+  --background: #efefed;
+  --foreground: #11120f;
+  --card: #ffffff;
+  --card-foreground: #11120f;
+  --popover: #ffffff;
+  --popover-foreground: #11120f;
 
-  --primary: oklch(0.27 0.006 62);
-  --primary-foreground: oklch(0.975 0.006 85);
-  --secondary: oklch(0.945 0.009 82);
-  --secondary-foreground: oklch(0.27 0.006 62);
-  --muted: oklch(0.945 0.009 82);
-  --muted-foreground: oklch(0.52 0.009 66);
-  --accent: oklch(0.928 0.013 80);
-  --accent-foreground: oklch(0.27 0.006 62);
+  --primary: #11120f;
+  --primary-foreground: #f8f8f6;
+  --secondary: #f1f1ec;
+  --secondary-foreground: #11120f;
+  --muted: #f1f1ec;
+  --muted-foreground: #60615d;
+  --accent: #e9efff;
+  --accent-foreground: #11120f;
   --destructive: oklch(0.575 0.2 27);
 
-  --border: oklch(0.9 0.011 82);
-  --input: oklch(0.9 0.011 82);
-  --ring: oklch(0.5 0.2 264);
+  --border: #e2e2dc;
+  --input: #e2e2dc;
+  --ring: #2765e8;
 
-  --brand: oklch(0.5 0.2 264);
-  --brand-foreground: oklch(0.985 0.005 85);
+  --brand: #2765e8;
+  --brand-foreground: #ffffff;
   --clay: oklch(0.62 0.15 46);
 
   --radius: 0.5rem;
 
-  --sidebar: oklch(0.986 0.006 86);
-  --sidebar-foreground: oklch(0.24 0.007 62);
-  --sidebar-primary: oklch(0.27 0.006 62);
-  --sidebar-primary-foreground: oklch(0.985 0.006 85);
-  --sidebar-accent: oklch(0.928 0.013 80);
-  --sidebar-accent-foreground: oklch(0.27 0.006 62);
-  --sidebar-border: oklch(0.9 0.011 82);
-  --sidebar-ring: oklch(0.5 0.2 264);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #11120f;
+  --sidebar-primary: #11120f;
+  --sidebar-primary-foreground: #f8f8f6;
+  --sidebar-accent: #e9efff;
+  --sidebar-accent-foreground: #11120f;
+  --sidebar-border: #e2e2dc;
+  --sidebar-ring: #2765e8;
 }
 
 @layer base {
@@ -100,6 +100,8 @@
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   ::selection {
     background: color-mix(in oklch, var(--brand) 22%, transparent);
@@ -126,8 +128,8 @@
   }
   .font-display {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 760;
+    letter-spacing: -0.055em;
   }
 }
 

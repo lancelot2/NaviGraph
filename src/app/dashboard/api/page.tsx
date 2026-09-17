@@ -32,7 +32,7 @@ export default async function ApiPage() {
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <LogoMark className="h-6 w-6 text-brand" />
-            <span className="text-[15px] font-medium tracking-tight">NaviGraph</span>
+            <span className="text-[15px] font-bold tracking-tight">NaviGraph</span>
             <span className="label-mono hidden sm:block">api</span>
           </Link>
           <Link

@@ -52,7 +52,7 @@ export function JsonBlock({
         <div key={idx} className="whitespace-pre-wrap">
           {renderLine(ln, t, `l${idx}`)}
           {caret && idx === all.length - 1 && (
-            <span className="animate-caret ml-px inline-block h-3.5 w-[7px] translate-y-0.5 bg-red-500" />
+            <span className="animate-caret ml-px inline-block h-3.5 w-[7px] translate-y-0.5 bg-brand" />
           )}
         </div>
       ))}

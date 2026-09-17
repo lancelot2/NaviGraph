@@ -6,6 +6,13 @@ import { Wordmark } from "@/components/logo"
 
 const REPO_URL = "https://github.com/lancelot2/NaviGraph"
 
+// In-page anchors — target the section ids set on the landing page.
+const NAV_LINKS = [
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Why it matters", href: "#why" },
+  { label: "API", href: "#api" },
+]
+
 function formatStars(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : `${n}`
 }
@@ -33,12 +40,19 @@ export function LandingNavbar({ stars }: { stars: number | null }) {
         <Link href="/" aria-label="NaviGraph">
           <Wordmark />
         </Link>
+        <div className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+          {NAV_LINKS.map((l) => (
+            <a key={l.href} href={l.href} className="transition-colors hover:text-brand">
+              {l.label}
+            </a>
+          ))}
+        </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <a
             href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground"
+            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground"
           >
             <GitHubIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Star</span>
@@ -49,13 +63,13 @@ export function LandingNavbar({ stars }: { stars: number | null }) {
           </a>
           <Link
             href="/login"
-            className="hidden whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            className="hidden whitespace-nowrap rounded-md px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             Log in
           </Link>
           <Link
             href="/login"
-            className="whitespace-nowrap rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-brand-foreground shadow-sm shadow-brand/20 transition-opacity hover:opacity-90"
+            className="whitespace-nowrap rounded-md bg-brand px-4 py-1.5 text-sm font-medium text-brand-foreground shadow-sm shadow-brand/20 transition-opacity hover:opacity-90"
           >
             Sign up
           </Link>

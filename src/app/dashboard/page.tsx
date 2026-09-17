@@ -22,7 +22,7 @@ export default async function Dashboard() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <LogoMark className="h-6 w-6 text-brand" />
-            <span className="text-[15px] font-medium tracking-tight">NaviGraph</span>
+            <span className="text-[15px] font-bold tracking-tight">NaviGraph</span>
             <span className="label-mono hidden sm:block">studio</span>
           </Link>
           <div className="flex items-center gap-4">

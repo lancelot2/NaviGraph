@@ -105,14 +105,14 @@ export function HeroIllustration() {
       {/* Scan line — sweeps across and back during the scan phase */}
       {phase === "scan" && (
         <div
-          className="pointer-events-none absolute top-0 z-10 h-full w-[3px] bg-red-500"
+          className="pointer-events-none absolute top-0 z-10 h-full w-[3px] bg-brand"
           style={{
             left: `${scanLeft}%`,
             transition: `left ${SWEEP}ms ease-in-out`,
-            boxShadow: "0 0 18px 4px rgba(229,72,77,0.75)",
+            boxShadow: "0 0 18px 4px rgba(39,101,232,0.75)",
           }}
         >
-          <span className="absolute left-1/2 top-1 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-red-500" />
+          <span className="absolute left-1/2 top-1 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-brand" />
         </div>
       )}
 

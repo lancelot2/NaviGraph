@@ -94,7 +94,7 @@ export function PlanDropzone({ projectId }: { projectId: string }) {
           </div>
           <button
             onClick={() => setError(null)}
-            className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90"
+            className="rounded-md bg-brand px-5 py-2 text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90"
           >
             Try again
           </button>

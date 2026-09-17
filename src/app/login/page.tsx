@@ -21,7 +21,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
           <LogoMark className="h-7 w-7 text-brand" />
-          <span className="text-xl font-medium tracking-tight">NaviGraph</span>
+          <span className="text-xl font-extrabold tracking-tight">NaviGraph</span>
         </Link>
 
         <div className="rounded-2xl border border-border bg-card p-7 shadow-[0_24px_60px_-30px_rgba(30,40,90,0.35)]">

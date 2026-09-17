@@ -84,26 +84,23 @@ export default async function Landing() {
 
   return (
     <main className="relative flex-1">
+      {/* Cobalt glow bleeding off the top-right corner. Lives here (not inside
+          the clipped hero wrapper) so it can extend up behind the transparent
+          navbar instead of being cut off at the navbar line. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-0 h-[32rem] w-[32rem] -translate-y-24 rounded-full bg-brand/10 blur-3xl"
+      />
       <LandingNavbar stars={stars} />
 
       <div className="relative overflow-hidden">
-        {/* One continuous canvas — a subtle grid that dissolves into the paper. */}
-        <div
-          aria-hidden
-          className="bg-grid pointer-events-none absolute inset-x-0 top-0 h-[85vh] [mask-image:linear-gradient(to_bottom,black,transparent)]"
-        />
-
         {/* Hero */}
         <section className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-16">
-          {/* Cobalt glow + floating graph nodes, echoing the banner. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-24 -top-24 h-[32rem] w-[32rem] rounded-full bg-brand/10 blur-3xl"
-          />
+          {/* Floating graph nodes, echoing the banner. */}
           <NodeField />
 
           <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />
               Spatial memory for embodied AI
             </span>
@@ -119,7 +116,7 @@ export default async function Landing() {
             <div className="mt-8 flex flex-col items-start gap-4">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 font-medium text-brand-foreground shadow-lg shadow-brand/20 transition-all hover:-translate-y-0.5 hover:opacity-95"
+                className="inline-flex items-center gap-2 rounded-md bg-brand px-6 py-3 font-medium text-brand-foreground shadow-lg shadow-brand/20 transition-all hover:-translate-y-0.5 hover:opacity-95"
               >
                 Upload your Floor Plan
                 <ArrowRight className="h-4 w-4" />
@@ -128,7 +125,7 @@ export default async function Landing() {
                 href={REPO_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground"
+                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
               >
                 <GitHubIcon className="h-4 w-4" />
                 Fully open source
@@ -181,7 +178,7 @@ export default async function Landing() {
         </section>
 
         {/* Pipeline */}
-        <section className="mx-auto max-w-6xl px-6 py-20">
+        <section id="how-it-works" className="mx-auto max-w-6xl px-6 py-20">
           <div className="mb-10 flex items-end justify-between">
             <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
               Build <span className="text-brand">spatial memory</span> in four steps
@@ -203,7 +200,7 @@ export default async function Landing() {
         </section>
 
         {/* Why spatial memory */}
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1fr_0.8fr]">
+        <section id="why" className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1fr_0.8fr]">
           <div>
             <span className="label-mono">why it matters</span>
             <h2 className="mt-3 font-display text-3xl tracking-tight sm:text-4xl">
@@ -238,7 +235,7 @@ export default async function Landing() {
         </section>
 
         {/* API — request / response flow */}
-        <section className="mx-auto max-w-6xl px-6 py-20">
+        <section id="api" className="mx-auto max-w-6xl px-6 py-20">
           <div className="mb-10">
             <span className="label-mono">the deliverable</span>
             <h2 className="mt-3 font-display text-3xl tracking-tight sm:text-4xl">
@@ -292,20 +289,17 @@ export default async function Landing() {
           </div>
         </section>
 
-        <footer className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 border-t border-border/60 px-6 pb-10 pt-8 text-sm text-muted-foreground sm:flex-row">
-          <span className="flex items-center gap-2 text-foreground">
-            <LogoMark className="h-5 w-5" />
-            <span className="font-medium">NaviGraph</span>
-          </span>
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-          >
-            <GitHubIcon className="h-4 w-4" />
-            lancelot2/NaviGraph
-          </a>
+        {/* Footer: a full-bleed banner stuck to the bottom of the page. Its top
+            edge is the same paper tone as the background, so it melts into the
+            sections above with no seam. */}
+        <footer className="mt-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/footer-banner.jpeg"
+            alt="A mobile robot navigating an indoor warehouse along a generated blue path"
+            className="block w-full select-none [mask-image:linear-gradient(to_bottom,transparent,black_6%)]"
+            draggable={false}
+          />
         </footer>
       </div>
     </main>
